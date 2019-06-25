@@ -16,9 +16,6 @@ class CephAdapter:
 
     ### Internal methods
 
-    def _set_default_bucket(self, name: str) -> None:
-        self.default_bucket = self.conn.get_bucket(name)
-
     def _list_bucket(self) -> List[Bucket]:
         try:
             return self.conn.get_all_buckets()
@@ -51,14 +48,14 @@ class CephAdapter:
                 calling_format = OrdinaryCallingFormat(),
             )
 
-            self._set_default_bucket(self._default_bucket_name)
+            self.default_bucket = self.conn.get_bucket(self._default_bucket_name)
 
         except EnvironmentError:
             raise CephAdapterError("Read Keyfile error")
         except S3ResponseError as s3err:
-            raise CephAdapterError("Ceph S3 error: "+s3err)
+            raise CephAdapterError("Ceph S3 error: "+ str(s3err))
         except Exception as e:
-            raise CephAdapterError("Ceph Connect Error: "+e)
+            raise CephAdapterError("Ceph Connect Error: "+str(e))
 
     def upload(self, parcel_id: str, data: bytes) -> None:
         try:
@@ -68,7 +65,7 @@ class CephAdapter:
             else:
                 raise CephAdapterError("Bucket is None")
         except ValueError as e:
-            raise CephAdapterError("Ceph Upload error: "+e)
+            raise CephAdapterError("Ceph Upload error: "+str(e))
     
     def download(self, parcel_id: str) -> bytes:
         try:
@@ -82,7 +79,7 @@ class CephAdapter:
             else:
                 raise CephAdapterError("Bucket is None")
         except ValueError as e:
-            raise CephAdapterError("Ceph Download error: "+e)
+            raise CephAdapterError("Ceph Download error: "+str(e))
     
     def remove(self, parcel_id: str) -> None:
         try:
@@ -91,7 +88,7 @@ class CephAdapter:
             else:
                 raise CephAdapterError("Bucket is None")
         except ValueError as e:
-            raise CephAdapterError("Ceph Remove error: "+e)
+            raise CephAdapterError("Ceph Remove error: "+str(e))
     
 
 class CephAdapterError(Exception):
