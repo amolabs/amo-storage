@@ -5,7 +5,7 @@ from flask import request, abort
 class ParcelsAPI(MethodView):
     def __init__(self):
         if request.method not in ['GET', 'POST', 'DELETE', ]:
-            abort(400)
+            abort(405)
 
     def get(self, parcel_id: str):
         pass
