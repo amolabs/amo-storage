@@ -27,22 +27,38 @@ class CephTest(unittest.TestCase):
     #         print(e.msg)
     # def test_upload(self):
     #     try:
-    #         self.adpt.upload("testParcel3", bytes([10, 20, 30, 40, 50]))
+    #         self.adpt.upload("testParcel4", bytes([10, 20]))
     #     except CephAdapterError as e:
     #         print(e.msg)
 
     def test_bucketContent(self):
         
         try:
-            for key in self.adpt.listContent():
-                print("{name}\t{size}\t{modified}".format(
+            for key in self.adpt._listContent():
+                print("{name}\t{size}\t{modified}\t{metadata}".format(
                 name = key.name,
                 size = key.size,
                 modified = key.last_modified,
+                metadata = key.metadata,
                 ))
                 if key.name == "testParcel3":
                     data = key.get_contents_as_string()
                     print(list(data))
+
+        except CephAdapterError as e:
+            print(e.msg)
+    
+    # def test_download(self):
+    #     try:
+    #         data = self.adpt.download("testParcel3")
+    #         print(list(data))
+
+    #     except CephAdapterError as e:
+    #         print(e.msg)
+
+    def test_remove(self):
+        try:
+            self.adpt.remove("testParcel")
 
         except CephAdapterError as e:
             print(e.msg)
