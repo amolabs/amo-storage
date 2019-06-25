@@ -14,6 +14,9 @@ class CephAdapter:
         self.DefaultPort = 7480
         self.DefaultBucketName = "amo"
     
+    def _setDefaultBucket(self, name: str) -> None:
+        self.defaultBucket = self.conn.get_bucket(name)
+
     def connect(self, keyfilepath: str = "./key.json") -> None:
 
         try:
@@ -27,18 +30,15 @@ class CephAdapter:
                 calling_format = OrdinaryCallingFormat(),
             )
 
-            self.setDefaultBucket("amo")
+            self._setDefaultBucket("amo")
 
         except EnvironmentError:
             raise CephAdapterError("Read Keyfile error")
         except S3ResponseError as s3err:
-            raise CephAdapterError("S3 error: "+s3err)
+            raise CephAdapterError("Ceph S3 error: "+s3err)
         except Exception as e:
-            print(e)
-            raise CephAdapterError("Ceph Connection Error: "+e)
+            raise CephAdapterError("Ceph Connect Error: "+e)
 
-    def setDefaultBucket(self, name: str) -> None:
-        self.defaultBucket = self.conn.get_bucket(name)
 
     def listBucket(self) -> List[Bucket]:
         try:
@@ -50,14 +50,18 @@ class CephAdapter:
         if self.defaultBucket != None:
             return self.defaultBucket.list()
         else:
-            raise CephAdapterError("Bucket is None: ")
+            raise CephAdapterError("Bucket is None")
     
-    def upload(self, parcelId: str, data: str) -> None:
-        if self.defaultBucket != None:
-            key = self.defaultBucket.new_key(parcelId)
-            key.set_contents_from_string(data)
-        else:
-            raise CephAdapterError("Bucket is None: ")
+    def upload(self, parcelId: str, data: bytes) -> None:
+        
+        try:
+            if self.defaultBucket != None:
+                key = self.defaultBucket.new_key(parcelId)
+                key.set_contents_from_string(data)
+            else:
+                raise CephAdapterError("Bucket is None")
+        except ValueError as e:
+            raise CephAdapterError("Ceph Upload error: "+e)
 
 class CephAdapterError(Exception):
     def __init__(self, msg: str):

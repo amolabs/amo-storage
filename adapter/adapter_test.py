@@ -27,7 +27,7 @@ class CephTest(unittest.TestCase):
     #         print(e.msg)
     # def test_upload(self):
     #     try:
-    #         self.adpt.upload("testParcel2", "testData")
+    #         self.adpt.upload("testParcel3", bytes([10, 20, 30, 40, 50]))
     #     except CephAdapterError as e:
     #         print(e.msg)
 
@@ -40,6 +40,9 @@ class CephTest(unittest.TestCase):
                 size = key.size,
                 modified = key.last_modified,
                 ))
+                if key.name == "testParcel3":
+                    data = key.get_contents_as_string()
+                    print(list(data))
 
         except CephAdapterError as e:
             print(e.msg)
