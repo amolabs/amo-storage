@@ -5,9 +5,9 @@ from typing import Dict, Tuple, Optional
 class CephUtil:
 
     @staticmethod
-    def readKeysFromfile(filename: str) -> Optional[Tuple[str, str]]:
+    def read_keys_from_file(file_name: str) -> Optional[Tuple[str, str]]:
         try:
-            with open(filename) as data_file:
+            with open(file_name) as data_file:
                 data = json.load(data_file)
                 if 'access_key' in data and 'secret_key' in data:
                     access_key = data["access_key"]

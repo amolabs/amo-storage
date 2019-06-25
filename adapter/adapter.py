@@ -8,46 +8,50 @@ import leveldb
 
 class CephAdapter:
 
-    defaultBucket = None
-
     def __init__(self) -> None:
-        self.DefaultHost = "172.105.221.117"
-        self.DefaultPort = 7480
-        self.DefaultBucketName = "amo"
+        self._host = None
+        self._port = None
+        self._default_bucket_name = None
+        self.default_bucket = None
 
     ### Internal methods
 
-    def _setDefaultBucket(self, name: str) -> None:
-        self.defaultBucket = self.conn.get_bucket(name)
+    def _set_default_bucket(self, name: str) -> None:
+        self.default_bucket = self.conn.get_bucket(name)
 
-    def _listBucket(self) -> List[Bucket]:
+    def _list_bucket(self) -> List[Bucket]:
         try:
             return self.conn.get_all_buckets()
         except S3ResponseError as e:
             raise CephAdapterError(e)
 
-    def _listContent(self) -> BucketListResultSet:
-        if self.defaultBucket != None:
-            return self.defaultBucket.list()
+    def _list_content(self) -> BucketListResultSet:
+        if self.default_bucket != None:
+            return self.default_bucket.list()
         else:
             raise CephAdapterError("Bucket is None")
     
     
     ### Opened methods for ceph interaction
 
-    def connect(self, keyfilepath: str = "./key.json") -> None:
+    def connect(self, host:str, port:int, keyfile_path:str, default_bucket_name:str) -> None:
+        
+        self._host = host
+        self._port = port
+        self._default_bucket_name = default_bucket_name
+
         try:
-            keyTuple = CephUtil.readKeysFromfile(keyfilepath)
+            key_tuple = CephUtil.read_keys_from_file(keyfile_path)
             self.conn = S3Connection(
-                aws_access_key_id = keyTuple[0],
-                aws_secret_access_key = keyTuple[1],
-                host = self.DefaultHost,
-                port = self.DefaultPort,
+                aws_access_key_id = key_tuple[0],
+                aws_secret_access_key = key_tuple[1],
+                host = self._host,
+                port = self._port,
                 is_secure = False,
                 calling_format = OrdinaryCallingFormat(),
             )
 
-            self._setDefaultBucket("amo")
+            self._set_default_bucket(self._default_bucket_name)
 
         except EnvironmentError:
             raise CephAdapterError("Read Keyfile error")
@@ -56,20 +60,20 @@ class CephAdapter:
         except Exception as e:
             raise CephAdapterError("Ceph Connect Error: "+e)
 
-    def upload(self, parcelId: str, data: bytes) -> None:
+    def upload(self, parcel_id: str, data: bytes) -> None:
         try:
-            if self.defaultBucket != None:
-                key = self.defaultBucket.new_key(parcelId)
+            if self.default_bucket != None:
+                key = self.default_bucket.new_key(parcel_id)
                 key.set_contents_from_string(data)
             else:
                 raise CephAdapterError("Bucket is None")
         except ValueError as e:
             raise CephAdapterError("Ceph Upload error: "+e)
     
-    def download(self, parcelId: str) -> bytes:
+    def download(self, parcel_id: str) -> bytes:
         try:
-            if self.defaultBucket != None:
-                key = self.defaultBucket.get_key(parcelId)
+            if self.default_bucket != None:
+                key = self.default_bucket.get_key(parcel_id)
                 if key == None:
                     raise CephAdapterError("Invalid Parcel Id")
 
@@ -80,10 +84,10 @@ class CephAdapter:
         except ValueError as e:
             raise CephAdapterError("Ceph Download error: "+e)
     
-    def remove(self, parcelId: str) -> None:
+    def remove(self, parcel_id: str) -> None:
         try:
-            if self.defaultBucket != None:
-                self.defaultBucket.delete_key(parcelId)
+            if self.default_bucket != None:
+                self.default_bucket.delete_key(parcel_id)
             else:
                 raise CephAdapterError("Bucket is None")
         except ValueError as e:
