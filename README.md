@@ -40,8 +40,8 @@ Ceph adapter for Amo storage service.
 
 
 ## Auth Flow
-Should be performed before call the operation which needs authorization process 
-1. Client send `POST` request to `/auth` with `{"user": user_identity, "operation": operation_name"}` in the request body.
+Should be performed before the operation which needs authorization process is called
+1. Client sends `POST` request to `/auth` with `{"user": user_identity, "operation": operation_name"}` in the request body.
 2. Server generates `JWT` with below format and response the `JWT`
 	```python
 	import base64
@@ -64,7 +64,7 @@ Should be performed before call the operation which needs authorization process
 	JWT = HEADER + "." + PAYLOAD + "." + SIGNATURE 
 	```
 
-3. When client send request for any operation which need authorization process(`upload`, `download`, `remove`), the request should be sent with authorization headers like below. 
+3. When client sends request for any operation which need authorization process(`upload`, `download`, `remove`), the request should be sent with authorization headers like below. 
 
 	```
 	X-Auth-Token: Received JWT
@@ -72,11 +72,11 @@ Should be performed before call the operation which needs authorization process
 	X-Signature: Signed JWT (base64 url-safe encoded) 
 	```
 	
-4. Then server verify the `X-signature` with client's `X-Public-Key` to check whether the request is sent from valid client and whether the `X-Auth-Token` is published by server itself.
+4. Then server verifies the `X-signature` with client's `X-Public-Key` to check whether the request is sent from valid client and whether the `X-Auth-Token` is published by server itself.
 
 5. If the verification is succeed, the server executes the operation that client requests.
 
-6. When the operation is succeed, delete the JWT token from its store.
+6. When the operation is succeed, the server removes the JWT token from its store.
 
 ## APIs
 ***NOTE:*** The operations which need authorization process like `upload`, `download`, `remove` should be called with authorization headers like we explained on the `Auth Flow` section.
