@@ -12,7 +12,12 @@ class CephTest(unittest.TestCase):
     
     def setUp(self):
         warnings.filterwarnings(action="ignore", message="unclosed", category=ResourceWarning)
-            
+        
+    
+    def tearDown(self):
+        if self.adpt:
+            self.adpt.remove("testParcel")
+        
     def test_order(self):
 
         try:   
