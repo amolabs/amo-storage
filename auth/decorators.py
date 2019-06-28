@@ -20,7 +20,7 @@ def auth_required(f):
         encoded_signature = request.headers.get('X-Signature')
 
         if token is None or encoded_public_key is None or encoded_signature is None:
-            return jsonify({"error": "One or more required fields do not exists in the header"}), 403
+            return jsonify({"error": "One or more required fields do not exist in the header"}), 403
         try:
             payload = jwt.decode(token, AuthConfig.SECRET, algorithms=['HS256'])
         except:
@@ -31,7 +31,7 @@ def auth_required(f):
 
         # Check if token exists
         if redis.get(payload.get('user') + ":" + payload.get('operation')) is None:
-            return jsonify({"error": "Token does not exists"}), 403
+            return jsonify({"error": "Token does not exist"}), 403
 
         method_operation_map = {
             'GET': 'download',
