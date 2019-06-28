@@ -1,8 +1,8 @@
 import json
 from typing import Tuple, Optional
 
-class CephUtil:
 
+class CephUtil:
     @staticmethod
     def read_keys_from_file(file_name: str) -> Optional[Tuple[str, str]]:
         try:
