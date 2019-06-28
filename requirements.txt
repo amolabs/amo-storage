@@ -4,3 +4,6 @@ jsonschema==3.0.1
 boto==2.49.0
 PyJWT==1.7.1
 flask-cors==3.0.8
+flask-sqlalchemy==2.4.0
+flask-and-redis==1.0.0
+pycryptodome==3.8.2
