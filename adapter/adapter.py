@@ -2,9 +2,10 @@ from boto.s3.connection import S3Connection, OrdinaryCallingFormat
 from boto.s3.bucket import Bucket
 from boto.s3.bucketlistresultset import BucketListResultSet
 from boto.exception import S3ResponseError
-from util import CephUtil
-from typing import List, Dict, Optional
-from exception import CephAdapterError, CephAdapterErrorCode
+from typing import List
+from adapter.util import CephUtil
+from adapter.exception import CephAdapterError, CephAdapterErrorCode
+
 
 class CephAdapter:
 

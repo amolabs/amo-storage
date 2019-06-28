@@ -1,6 +1,5 @@
-import os
 import json
-from typing import Dict, Tuple, Optional
+from typing import Tuple, Optional
 
 class CephUtil:
 
