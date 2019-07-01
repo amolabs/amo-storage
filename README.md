@@ -10,8 +10,12 @@ Ceph adapter for Amo storage service.
 ### Pre-requisites
 - [Python3](https://www.python.org/downloads/release/python-368/) (compatible on 3.6.8)
 - Python3-pip
+- [Redis](https://redis.io/download)
+	
 
-### CEPH Configuration
+### Configurations
+
+#### CEPH Configuration
 ***NOTE:*** *This section is not for the CEPH's configuration or configuring the CEPH cluster itself but for connecting to existing CEPH properly.*
 *The CEPH cluster is assumed the be constructed and configured separately.*
 
@@ -26,8 +30,15 @@ Ceph adapter for Amo storage service.
 ```
 
 ### Run
+***NOTE:*** *Before starting AMO-Storage API server, `redis` server daemon must be running.*
+
+To run AMO-Storage API server, some dependencies must be installed. Install via below command.
 ```shell
 $ pip3 install -r requirements.txt
+```
+
+And then run flask server via below command.
+```shell
 $ python3 main.py 0.0.0.0:{PORT}
 ```
 
@@ -58,14 +69,14 @@ Each API's request body parameter is well defined on [AMO storage Documents](htt
 ```http
 POST /api/{api_version}/auth
 ```
-##### Request Body
+#### Request Body
 
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | `user` | `string` | **Required**. user_identity |
 | `operation` | `string` | **Required**. operation_name |
 
-##### Response Body
+#### Response Body
 
 ```json
 {
@@ -79,15 +90,15 @@ POST /api/{api_version}/auth
 ```http
 POST /api/{api_version}/parcels
 ```
-##### Request Body
+#### Request Body
 
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | `owner` | `string` | **Required**. user_identity |
-| `metadata` | `string` | metadata |
+| `metadata` | `JSON object` | metadata |
 | `data` | `string` | **Required**. hex_encoded_binary_sequence |
-##### Response Body
 
+#### Response Body
 ```json
 {
   "id": data_parcel_id
@@ -99,11 +110,11 @@ POST /api/{api_version}/parcels
 ```http
 GET /api/{api_version}/parcels/{parcel_id}
 ```
-##### Request Body
+#### Request Body
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 
-##### Response Body
+#### Response Body
 ```json
 {
   "id": data_parcel_id,
@@ -116,11 +127,11 @@ GET /api/{api_version}/parcels/{parcel_id}
 ```http
 GET /api/{api_version}/parcels/{parcel_id}?key=metadata
 ```
-##### Request Body
+#### Request Body
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 
-##### Response Body
+#### Response Body
 ```json
 {
   "id": data_parcel_id,
@@ -134,11 +145,11 @@ GET /api/{api_version}/parcels/{parcel_id}?key=metadata
 ```http
 DELETE /api/{api_version}/parcels/{parcel_id}
 ```
-##### Request Body
+#### Request Body
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 
-##### Response Body
+#### Response Body
 ```json
 {}
 ```
