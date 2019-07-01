@@ -12,7 +12,7 @@ Ceph adapter for Amo storage service.
 - Python3-pip
 
 ### CEPH Configuration
-**NOTE:** *This section is not for the CEPH's configuration or configuring the CEPH cluster itself but for connecting to existing CEPH properly.*
+***NOTE:*** *This section is not for the CEPH's configuration or configuring the CEPH cluster itself but for connecting to existing CEPH properly.*
 *The CEPH cluster is assumed the be constructed and configured separately.*
 
 - The `access_key` and `secret_key` which are used for connecting to the **CEPH instance** can be found in the `key` attribute of CEPH user.
@@ -32,9 +32,9 @@ $ python3 main.py 0.0.0.0:{PORT}
 ```
 
 ## APIs
-***NOTE:*** The operations which need authorization process like `upload`, `download`, `remove` should be requested with authorization headers like below. 
+The operations which need authorization process like `upload`, `download`, `remove` should be requested with authorization headers like below. 
 
-#### Request Header
+#### Request Headers
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | `X-Auth-Token` | `string` | **Required**. Received `JWT` |
