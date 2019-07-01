@@ -1,10 +1,10 @@
 import unittest
 from adapter.adapter import CephAdapter, CephAdapterError
 import warnings
-## For testing ceph interaction only. 
+
+
+# For testing ceph interaction only.
 # Not for testing unittest
-
-
 class CephTest(unittest.TestCase):
 
     def setUp(self):
@@ -33,10 +33,10 @@ class CephTest(unittest.TestCase):
             print("-- bucket content list start")
             for key in self.adpt._list_content():
                 print("{name}\t{size}\t{modified}\t{metadata}".format(
-                name = key.name,
-                size = key.size,
-                modified = key.last_modified,
-                metadata = key.metadata,
+                    name = key.name,
+                    size = key.size,
+                    modified = key.last_modified,
+                    metadata = key.metadata,
                 ))
             print("-- bucket content list done")
 
