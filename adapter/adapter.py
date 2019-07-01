@@ -15,6 +15,7 @@ class CephAdapter:
         self._default_bucket_name = None
         self.default_bucket = None
 
+
     # Internal methods
     def _list_bucket(self) -> List[Bucket]:
         try:
@@ -36,7 +37,6 @@ class CephAdapter:
 
     # Opened methods for ceph interaction
     def connect(self, host: str, port: int, keyfile_path: str, default_bucket_name: str) -> None:
-        
         self._host = host
         self._port = port
         self._default_bucket_name = default_bucket_name
@@ -51,9 +51,7 @@ class CephAdapter:
                 is_secure = False,
                 calling_format = OrdinaryCallingFormat(),
             )
-
             self.default_bucket = conn.get_bucket(self._default_bucket_name)
-
         except EnvironmentError:
             raise CephAdapterError(
                 "Read Keyfile error", 
