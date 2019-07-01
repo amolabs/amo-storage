@@ -8,9 +8,10 @@ Ceph adapter for Amo storage service.
 
 ## How to Start
 ### Pre-requisites
-- [Python3](https://www.python.org/downloads/release/python-368/) (compatible on 3.6.8)
-- Python3-pip
-- [Redis](https://redis.io/download)
+- [Python3](https://www.python.org/downloads/release/python-368/) (compatible with 3.6.8)
+- Python3-pip (compatible with 9.0.1)
+- [Redis](https://redis.io/download) (compatible with 5.0.5)
+- [Sqlite](https://www.sqlite.org/download.html) (compatible with 5.0.5)
 	
 
 ### Configurations
