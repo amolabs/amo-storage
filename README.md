@@ -96,8 +96,15 @@ POST /api/{api_version}/parcels
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | `owner` | `string` | **Required**. user_identity |
-| `metadata` | `JSON object` | metadata |
+| `metadata` | `JSON object` | **Required**. metadata |
 | `data` | `string` | **Required**. hex_encoded_binary_sequence |
+
+#### Metadata form
+```json
+{
+  "id": data_parcel_id
+}
+```
 
 #### Response Body
 ```json

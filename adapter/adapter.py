@@ -36,7 +36,9 @@ class CephAdapter:
     
     
     ### Opened methods for ceph interaction
-
+    def disconnect(self):
+        self.conn.close()
+        del self.conn
     def connect(self, host:str, port:int, keyfile_path:str, default_bucket_name:str) -> None:
         
         self._host = host
@@ -48,7 +50,7 @@ class CephAdapter:
             self.conn = S3Connection(
                 aws_access_key_id = key_tuple[0],
                 aws_secret_access_key = key_tuple[1],
-                host = self._host,
+                host = self._host, 
                 port = self._port,
                 is_secure = False,
                 calling_format = OrdinaryCallingFormat(),

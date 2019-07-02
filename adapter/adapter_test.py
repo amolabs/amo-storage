@@ -48,9 +48,11 @@ class CephTest(unittest.TestCase):
             metadata = key.metadata,
             ))
             list_content_count += 1
-            check_key = key 
+            if key.name == test_data_name:
+                check_key = key 
 
-        self.assertEqual(1, list_content_count)
+        self.assertNotEqual(0, list_content_count)
+        self.assertNotEqual(None, check_key)
         self.assertEqual(test_data_name, check_key.name)
 
         
