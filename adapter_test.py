@@ -33,6 +33,9 @@ class CephTest(unittest.TestCase):
 
         print("-- upload start")
         self.adpt.upload(test_data_name, test_data_bytes)
+
+        with self.assertRaises(CephAdapterError): # check duplicate upload
+            self.adpt.upload(test_data_name, bytes([10, 20, 30]))
         print("--upload done")
 
         print("-- bucket content list start")
