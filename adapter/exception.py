@@ -18,3 +18,4 @@ class CephAdapterErrorCode(enum.Enum):
     ERR_CONNET_CEPH = 603
     ERR_READ_FILE = 604
     ERR_VALUE = 605
+    ERR_ALREADY_EXIST = 606

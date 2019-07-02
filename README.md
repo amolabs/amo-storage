@@ -99,10 +99,12 @@ POST /api/{api_version}/parcels
 | `metadata` | `JSON object` | **Required**. metadata |
 | `data` | `string` | **Required**. hex_encoded_binary_sequence |
 
-#### Metadata form
+##### Metadata form
+Metadata field is a schemeless JSON form, but the `owner` field must be included.
 ```json
 {
-  "id": data_parcel_id
+  "owner": user_identity, // Mandantory field
+  ...
 }
 ```
 

@@ -72,8 +72,14 @@ class CephAdapter:
     def upload(self, parcel_id: str, data: bytes) -> None:
         try:
             if self.default_bucket is not None:
-                key = self.default_bucket.new_key(parcel_id)
-                key.set_contents_from_string(data)
+                if self.default_bucket.get_key(parcel_id) == None:
+                    key = self.default_bucket.new_key(parcel_id)
+                    key.set_contents_from_string(data)
+                else:
+                    raise CephAdapterError(
+                    "Value for Key `{}` is already exist".format(parcel_id), 
+                    CephAdapterErrorCode.ERR_ALREADY_EXIST
+                    )
             else:
                 raise CephAdapterError(
                     "Bucket is None", 
