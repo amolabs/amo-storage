@@ -14,12 +14,13 @@ class CephAdapter:
         self._port = None
         self._default_bucket_name = None
         self.default_bucket = None
+        self._conn = None
 
 
     # Internal methods
     def _list_bucket(self) -> List[Bucket]:
         try:
-            return self.conn.get_all_buckets()
+            return self._conn.get_all_buckets()
         except S3ResponseError as s3err:
             raise CephAdapterError(
                 "Ceph S3 error: " + str(s3err),
@@ -43,7 +44,7 @@ class CephAdapter:
 
         try:
             key_tuple = CephUtil.read_keys_from_file(keyfile_path)
-            conn = S3Connection(
+            self._conn = S3Connection(
                 aws_access_key_id = key_tuple[0],
                 aws_secret_access_key = key_tuple[1],
                 host = self._host, 
@@ -51,7 +52,7 @@ class CephAdapter:
                 is_secure = False,
                 calling_format = OrdinaryCallingFormat(),
             )
-            self.default_bucket = conn.get_bucket(self._default_bucket_name)
+            self.default_bucket = self._conn.get_bucket(self._default_bucket_name)
         except EnvironmentError:
             raise CephAdapterError(
                 "Read Keyfile error", 

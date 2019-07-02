@@ -20,7 +20,7 @@ class CephTest(unittest.TestCase):
 
         print("-- connect start")
         self.adpt = CephAdapter()
-        self.adpt.connect("172.105.221.117", 7480, "./key.json", "amo")
+        self.adpt.connect("172.105.221.117", 7480, "adapter/key.json", "amo")
         print("-- connect done")
 
         print("-- bucket list start")
