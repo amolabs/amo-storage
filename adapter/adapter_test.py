@@ -1,16 +1,14 @@
 import unittest
-from util import CephUtil
-from adapter import CephAdapter, CephAdapterError
+from adapter.adapter import CephAdapter, CephAdapterError
 import warnings
 
-## For testing ceph interaction only. 
-# Not for testing unittest
 
+# For testing ceph interaction only.
+# Not for testing unittest
 class CephTest(unittest.TestCase):
 
     def setUp(self):
         warnings.filterwarnings(action="ignore", message="unclosed", category=ResourceWarning)
-        
     def tearDown(self):
         if self.adpt:
             self.adpt.remove("testParcel")
@@ -42,10 +40,10 @@ class CephTest(unittest.TestCase):
         check_key = None
         for key in self.adpt._list_content():
             print("{name}\t{size}\t{modified}\t{metadata}".format(
-            name = key.name,
-            size = key.size,
-            modified = key.last_modified,
-            metadata = key.metadata,
+                name = key.name,
+                size = key.size,
+                modified = key.last_modified,
+                metadata = key.metadata,
             ))
             list_content_count += 1
             if key.name == test_data_name:
