@@ -63,10 +63,21 @@ class ParcelsTest(unittest.TestCase):
     def setUp(self):
         self.app_factory = self.create_app()
         self.app = self.app_factory.test_client()
+        self.is_uploaded = False
         with self.app_factory.app_context():
             db.create_all()
 
     def tearDown(self):
+        if self.is_uploaded:
+            remove_token = self.generate_token(self.owner.user_id, "remove")
+            res = self.app.delete('/api/v1/parcels/%s' % self.parcel_id,
+                                  headers=auth_header(remove_token,
+                                                      self.owner.public_key.hex(),
+                                                      generate_signature_hex(remove_token, self.owner.private_key)),
+                                  content_type='application/json')
+            assert res.status_code == 204
+            self.is_uploaded = False
+
         with self.app_factory.app_context():
             db.drop_all()
             redis.flushdb()
@@ -84,9 +95,9 @@ class ParcelsTest(unittest.TestCase):
         return token
 
     def test_upload(self):
-        owner = User(*generate_new_identity())
-        token = self.generate_token(owner.user_id, "upload")
-        metadata = {"owner": owner.user_id}
+        self.owner = User(*generate_new_identity())
+        token = self.generate_token(self.owner.user_id, "upload")
+        metadata = {"owner": self.owner.user_id}
         data = get_random_bytes(128).hex()
 
         self.uploaded_metadata = metadata
@@ -94,22 +105,22 @@ class ParcelsTest(unittest.TestCase):
 
         res = self.app.post('/api/v1/parcels',
                             headers=auth_header(token,
-                                                owner.public_key.hex(),
-                                                generate_signature_hex(token, owner.private_key)),
-                            data=upload_body(owner.user_id, metadata, data),
+                                                self.owner.public_key.hex(),
+                                                generate_signature_hex(token, self.owner.private_key)),
+                            data=upload_body(self.owner.user_id, metadata, data),
                             content_type='application/json')
         assert res.status_code == 201
         assert res.json.get("id") is not None
 
-        parcel_id = res.json.get("id")
-        return owner, parcel_id
+        self.parcel_id = res.json.get("id")
+        self.is_uploaded = True
 
     def test_download(self):
-        owner, parcel_id = self.test_upload()
+        self.test_upload()
         buyer = User(*generate_new_identity())
         download_token = self.generate_token(buyer.user_id, "download")
 
-        res = self.app.get('/api/v1/parcels/%s' % parcel_id,
+        res = self.app.get('/api/v1/parcels/%s' % self.parcel_id,
                            headers=auth_header(download_token,
                                                buyer.public_key.hex(),
                                                generate_signature_hex(download_token, buyer.private_key)),
@@ -118,23 +129,24 @@ class ParcelsTest(unittest.TestCase):
 
         assert self.uploaded_metadata == res.json.get('metadata')
         assert self.uploaded_data == res.json.get('data')
-        assert owner.user_id == res.json.get('owner')
+        assert self.owner.user_id == res.json.get('owner')
 
     def test_remove(self):
-        owner, parcel_id = self.test_upload()
-        remove_token = self.generate_token(owner.user_id, "remove")
+        self.test_upload()
+        remove_token = self.generate_token(self.owner.user_id, "remove")
 
-        res = self.app.delete('/api/v1/parcels/%s' % parcel_id,
+        res = self.app.delete('/api/v1/parcels/%s' % self.parcel_id,
                               headers=auth_header(remove_token,
-                                                  owner.public_key.hex(),
-                                                  generate_signature_hex(remove_token, owner.private_key)),
+                                                  self.owner.public_key.hex(),
+                                                  generate_signature_hex(remove_token, self.owner.private_key)),
                               content_type='application/json')
         assert res.status_code == 204
+        self.is_uploaded = False
 
     def test_inspect(self):
-        _, parcel_id = self.test_upload()
+        self.test_upload()
 
-        res = self.app.get('/api/v1/parcels/%s' % parcel_id, query_string={'key': 'metadata'})
+        res = self.app.get('/api/v1/parcels/%s' % self.parcel_id, query_string={'key': 'metadata'})
         assert res.status_code == 200
 
         assert self.uploaded_metadata == res.json.get('metadata')
