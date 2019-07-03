@@ -1,5 +1,5 @@
 from functools import wraps
-from flask import request, jsonify
+from flask import request, jsonify, g
 import jwt
 from Crypto.PublicKey import ECC
 from Crypto.Signature import DSS
@@ -32,6 +32,8 @@ def auth_required(f):
         # Check if token exists
         if redis.get(payload.get('user') + ":" + payload.get('operation')) is None:
             return jsonify({"error": "Token does not exist"}), 403
+
+        g.user = payload.get('user')
 
         method_operation_map = {
             'GET': 'download',
