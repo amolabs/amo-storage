@@ -14,12 +14,13 @@ class CephAdapter:
         self._port = None
         self._default_bucket_name = None
         self.default_bucket = None
+        self._conn = None
 
 
     # Internal methods
     def _list_bucket(self) -> List[Bucket]:
         try:
-            return self.conn.get_all_buckets()
+            return self._conn.get_all_buckets()
         except S3ResponseError as s3err:
             raise CephAdapterError(
                 "Ceph S3 error: " + str(s3err),
@@ -43,15 +44,15 @@ class CephAdapter:
 
         try:
             key_tuple = CephUtil.read_keys_from_file(keyfile_path)
-            conn = S3Connection(
+            self._conn = S3Connection(
                 aws_access_key_id = key_tuple[0],
                 aws_secret_access_key = key_tuple[1],
-                host = self._host,
+                host = self._host, 
                 port = self._port,
                 is_secure = False,
                 calling_format = OrdinaryCallingFormat(),
             )
-            self.default_bucket = conn.get_bucket(self._default_bucket_name)
+            self.default_bucket = self._conn.get_bucket(self._default_bucket_name)
         except EnvironmentError:
             raise CephAdapterError(
                 "Read Keyfile error", 
@@ -71,8 +72,14 @@ class CephAdapter:
     def upload(self, parcel_id: str, data: bytes) -> None:
         try:
             if self.default_bucket is not None:
-                key = self.default_bucket.new_key(parcel_id)
-                key.set_contents_from_string(data)
+                if self.default_bucket.get_key(parcel_id) == None:
+                    key = self.default_bucket.new_key(parcel_id)
+                    key.set_contents_from_string(data)
+                else:
+                    raise CephAdapterError(
+                    "Value for Key `{}` is already exist".format(parcel_id), 
+                    CephAdapterErrorCode.ERR_ALREADY_EXIST
+                    )
             else:
                 raise CephAdapterError(
                     "Bucket is None", 
