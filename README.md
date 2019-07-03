@@ -2,8 +2,8 @@
 
 ## Introduction
 Ceph adapter for Amo storage service.
-- Support REST API for data operations
-- Support JWT authorization
+- Support RESTful API for data operations
+- Support JWT authorization featuring challenge-response scheme
 
 
 ## How to Start
@@ -17,11 +17,12 @@ Ceph adapter for Amo storage service.
 ### Configurations
 
 #### CEPH Configuration
-***NOTE:*** *This section is not for the CEPH's configuration or configuring the CEPH cluster itself but for connecting to existing CEPH properly.*
-*The CEPH cluster is assumed the be constructed and configured separately.*
+***NOTE:*** *This section is not for the CEPH's configuration or configuring the CEPH cluster itself but for connecting to existing CEPH properly.* 
+***It is assumed that the CEPH cluster is constructed and configured separately*** and
+***it is assumed that there exists a CEPH Rados Gateway running.***
 
-- The `access_key` and `secret_key` which are used for connecting to the **CEPH instance** can be found in the `key` attribute of CEPH user.
-(We use only AMO's prepared user named `amoapi`)
+- The `access_key` and `secret_key` which are used for connecting to the **Rados Gateway** can be found in the `key` attribute of CEPH user.
+(We assume there is a Rados Gateway user `amoapi` for this adapter software. This may become configurable in the future version of this software.)
 - The `access_key` and `secret_key` should be included in the `key.json` file.
 ```son
 {
@@ -44,21 +45,24 @@ $ python3 main.py 0.0.0.0:{PORT}
 ```
 
 ## APIs
+### Authorization
 The operations which need authorization process like `upload`, `download`, `remove` should be requested with authorization headers like below. 
 
 #### Request Headers
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
-| `X-Auth-Token` | `string` | **Required**. Received `JWT` |
+| `X-Auth-Token` | `string` | **Required**. Received `ACCESS_TOKEN` |
 | `X-Public-Key` | `string` | **Required**. User's public key (base64 url-safe encoded) |
-| `X-Signature` | `string` | **Required**. Signed `JWT` (base64 url-safe encoded) |
+| `X-Signature` | `string` | **Required**. Signed `ACCESS_TOKEN` (base64 url-safe encoded) |
 
 
-To acquire `JWT`, client should have to send `POST` request to `auth` API with below data in the request body. 
+To acquire `ACCESS_TOKEN`, client should have to send `POST` request to `auth` API with below data in the request body. 
 ```
 {"user": user_identity, "operation": operation_name"}
 ```
 The `user_indentity` is the account address described on [AMO storage Documents](https://github.com/amolabs/docs/blob/master/storage.md) and `operation_name` is operation's name and should be all lowercase names. The `operation_name` can be `"upload"`, `"download"`, `"remove"`. `inspect` operation is not included because `inspect` operation should be requested without `auth`. 
+
+When the `ACCESS_TOKEN` is acquired, requesting client can construct request headers for an authorization. The request header must contains `X-Auth-Token`, `X-Public-Key`, `X-Signature` values. `X-Auth-Token` should be `ACCESS_TOKEN` value and `X-Public-Key` should be user's public key and it must be base64 url-safe encoded format. Finally, `X-Signature` should be `ACCESS_TOKEN` which is signed with user's private key and it must be base64 url-safe encoded format. Then, a client should send a request with those headers included.
 
 #### Error 
 When error is occurred, server will return the proper HTTP error code with response body : `{"error":{ERROR_MESSAGE}}`.
@@ -66,7 +70,7 @@ When error is occurred, server will return the proper HTTP error code with respo
 #### Body Parameter Detail
 Each API's request body parameter is well defined on [AMO storage Documents](https://github.com/amolabs/docs/blob/master/storage.md).
  
-### Auth
+### Auth API
 ```http
 POST /api/{api_version}/auth
 ```
@@ -81,12 +85,12 @@ POST /api/{api_version}/auth
 
 ```json
 {
-  "token": JWT_TOKEN
+  "token": ACCESS_TOKEN
 }
 ```
 
 
-### Upload
+### Upload API
 **Auth Required**
 ```http
 POST /api/{api_version}/parcels
@@ -115,7 +119,7 @@ Metadata field is a schemeless JSON form, but the `owner` field must be included
 }
 ```
 
-### Download
+### Download API
 **Auth Required**
 ```http
 GET /api/{api_version}/parcels/{parcel_id}
@@ -133,7 +137,7 @@ GET /api/{api_version}/parcels/{parcel_id}
 }
 ```
 
-### Inspect
+### Inspect API
 ```http
 GET /api/{api_version}/parcels/{parcel_id}?key=metadata
 ```
@@ -150,7 +154,7 @@ GET /api/{api_version}/parcels/{parcel_id}?key=metadata
 }
 ```
 
-### Remove
+### Remove API
 **Auth Required**
 ```http
 DELETE /api/{api_version}/parcels/{parcel_id}

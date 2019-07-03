@@ -49,3 +49,4 @@ venv.bak/
 .DS_Store
 key.json
 sftp.json
+adapter_test.py
