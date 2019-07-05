@@ -77,17 +77,11 @@ class AuthTest(unittest.TestCase):
         assert token is not None
 
         key_object = ECC.generate(curve='P-256')
-        public_key = key_object.public_key().export_key(format='DER', compress=True).hex()
+        public_key = key_object.public_key().export_key(format='DER', compress=False).hex()
 
         hash = SHA256.new(str.encode(token))
         signer = DSS.new(key_object, 'fips-186-3')
         signature = signer.sign(hash).hex()
-
-        # Authentication must succeed
-        res = self.app.get('/api/v1/parcels/abc',
-                           headers=self.auth_header(token, public_key, signature),
-                           content_type='application/json')
-        assert res.status_code == 200
 
         # Authentication must fail - Missing mandatory field in the header
         res = self.app.get('/api/v1/parcels/abc',
