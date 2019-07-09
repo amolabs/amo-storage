@@ -2,10 +2,12 @@ from flask import Flask
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from flask_redis import Redis
-from config import AmoStorageConfig
+from config import AmoStorageConfig, CephConfig
+from adapter.adapter import CephAdapter
 
 db = SQLAlchemy()
 redis = Redis()
+ceph = CephAdapter()
 
 
 def create_app(**config_overrides):
@@ -19,6 +21,14 @@ def create_app(**config_overrides):
 
     db.init_app(app)
     redis.init_app(app)
+
+    ceph.connect(
+        host=CephConfig.HOST,
+        port=CephConfig.PORT,
+        keyfile_path=CephConfig.KEY_FILE_PATH,
+        default_bucket_name=CephConfig.BUCKET_NAME
+    )
+
 
     from auth.views import auth_app
     from parcels.views import parcels_app

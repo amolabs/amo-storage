@@ -13,6 +13,8 @@ class AmoStorageConfig(object):
     REDIS_PORT = '6379'
     REDIS_DB = 0
 
+    SERVICE_ID = '00000001'
+
 
 class ProductionConfig(AmoStorageConfig):
     pass
@@ -34,7 +36,16 @@ class AuthConfig:
 
 
 class CephConfig:
-    pass
+    HOST = '172.105.221.117'
+    PORT = 7480
+    KEY_FILE_PATH = './keystore/ceph_key.json'
+    BUCKET_NAME = 'amo'
 
 
+class AmoBlockchainNodeConfig:
+    HOST = '139.162.180.153'
+    PORT = '26657'
 
+    @classmethod
+    def end_point(cls):
+        return "http://{0}:{1}".format(cls.HOST, cls.PORT)
