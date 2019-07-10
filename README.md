@@ -64,12 +64,14 @@ The `user_indentity` is the account address described on [AMO storage Documents]
 
 When the `ACCESS_TOKEN` is acquired, requesting client can construct request headers for an authorization. The request header must contains `X-Auth-Token`, `X-Public-Key`, `X-Signature` values. `X-Auth-Token` should be `ACCESS_TOKEN` value and `X-Public-Key` should be user's public key and it must be base64 url-safe encoded format. Finally, `X-Signature` should be `ACCESS_TOKEN` which is signed with user's private key and it must be base64 url-safe encoded format. Then, a client should send a request with those headers included.
 
+
 #### Error 
 When error is occurred, server will return the proper HTTP error code with response body : `{"error":{ERROR_MESSAGE}}`.
 
 #### Body Parameter Detail
-Each API's request body parameter is well defined on [AMO storage Documents](https://github.com/amolabs/docs/blob/master/storage.md).
- 
+* Each request body is not Form-encoded but `JSON-encoded` format.
+* Each API's request body parameter is well defined on [AMO storage Documents](https://github.com/amolabs/docs/blob/master/storage.md).
+
 ### Auth API
 ```http
 POST /api/{api_version}/auth
