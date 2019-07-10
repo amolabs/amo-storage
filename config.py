@@ -6,7 +6,7 @@ class AmoStorageConfig(object):
 
     # SQLite Configurations
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///tmp/amo_storage.db'
+    SQLALCHEMY_DATABASE_URI = 'sqlite:////tmp/amo_storage.db'
 
     # Redis Configurations
     REDIS_HOST = 'localhost'

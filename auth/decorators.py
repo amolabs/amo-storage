@@ -6,7 +6,7 @@ from Crypto.Signature import DSS
 from Crypto.Hash import SHA256
 from amo_storage import redis
 from config import AuthConfig
-
+import json
 
 def auth_required(f):
     @wraps(f)
@@ -30,7 +30,7 @@ def auth_required(f):
             return jsonify({"error": "Invalid token"}), 403
 
         # Check if token exists
-        if redis.get(payload.get('user') + ":" + payload.get('operation')) is None:
+        if redis.get(payload.get('user') + ":" + json.dumps(payload.get('operation'))) is None:
             return jsonify({"error": "Token does not exist"}), 403
 
         g.user = payload.get('user')

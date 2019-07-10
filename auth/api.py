@@ -4,7 +4,7 @@ from jsonschema import Draft7Validator
 from jsonschema.exceptions import best_match
 import jwt
 import uuid
-
+import json
 from auth.schema import schema
 from config import AuthConfig
 from amo_storage import redis
@@ -29,6 +29,6 @@ class AuthAPI(MethodView):
         encoded_jwt = jwt.encode(payload=auth_json,
                                  key=AuthConfig.SECRET,
                                  algorithm=AuthConfig.ALGORITHM).decode('utf-8')
-        redis.set(auth_json.get('user') + ':' + auth_json.get('operation'), encoded_jwt)
+        redis.set(auth_json.get('user') + ':' + json.dumps(auth_json.get('operation')), encoded_jwt)
 
         return jsonify({'token': encoded_jwt}), 200
