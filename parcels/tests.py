@@ -23,10 +23,10 @@ def generate_new_identity():
     return private_key_obj, public_key, SHA256.new(public_key).digest()[:20].hex()
 
 
-def auth_payload(user_id: str, operation_name: str) -> str:
+def auth_payload(user_id: str, operation_desc: Dict) -> str:
     return json.dumps(dict(
         user=user_id,
-        operation=operation_name,
+        operation=operation_desc,
     ))
 
 
@@ -56,7 +56,7 @@ class ParcelsTest(unittest.TestCase):
 
     def create_app(self):
         return create_app_base(
-            SQLALCHEMY_DATABASE_URI='sqlite:////Users/jayden/Works/amo-storage/parcels_test.db',
+            SQLALCHEMY_DATABASE_URI='sqlite:////Users/elon/Documents/develop/amo-storage/parcels_test.db',
             REDIS_DB=1,
         )
 
@@ -69,7 +69,13 @@ class ParcelsTest(unittest.TestCase):
 
     def tearDown(self):
         if self.is_uploaded:
-            remove_token = self.generate_token(self.owner.user_id, "remove")
+
+            op_desc = {
+                "name": "remove",
+                "id": self.parcel_id
+            }
+
+            remove_token = self.generate_token(self.owner.user_id, op_desc)
             res = self.app.delete('/api/v1/parcels/%s' % self.parcel_id,
                                   headers=auth_header(remove_token,
                                                       self.owner.public_key.hex(),
@@ -82,11 +88,12 @@ class ParcelsTest(unittest.TestCase):
             db.drop_all()
             redis.flushdb()
 
-    def generate_token(self, user_identity, operation_name):
+    def generate_token(self, user_identity, operation_desc):
         # Generate token
         res = self.app.post('/api/v1/auth',
-                            data=auth_payload(user_identity, operation_name),
+                            data=auth_payload(user_identity, operation_desc),
                             content_type='application/json')
+
         assert res.status_code == 200
 
         token = json.loads(res.data.decode('utf-8')).get('token')
@@ -96,9 +103,18 @@ class ParcelsTest(unittest.TestCase):
 
     def test_upload(self):
         self.owner = User(*generate_new_identity())
-        token = self.generate_token(self.owner.user_id, "upload")
-        metadata = {"owner": self.owner.user_id}
+
         data = get_random_bytes(128).hex()
+        data_hash = SHA256.new(str.encode(data)).digest().hex()
+
+        op_desc = {
+            "name": "upload",
+            "hash": str(data_hash)
+        }
+
+        token = self.generate_token(self.owner.user_id, op_desc)
+        metadata = {"owner": self.owner.user_id}
+
 
         self.uploaded_metadata = metadata
         self.uploaded_data = data
@@ -109,6 +125,7 @@ class ParcelsTest(unittest.TestCase):
                                                 generate_signature_hex(token, self.owner.private_key)),
                             data=upload_body(self.owner.user_id, metadata, data),
                             content_type='application/json')
+
         assert res.status_code == 201
         assert res.json.get("id") is not None
 
@@ -118,7 +135,13 @@ class ParcelsTest(unittest.TestCase):
     def test_download(self):
         self.test_upload()
         buyer = User(*generate_new_identity())
-        download_token = self.generate_token(buyer.user_id, "download")
+
+        op_desc = {
+            "name": "download",
+            "id": self.parcel_id
+        }
+
+        download_token = self.generate_token(buyer.user_id, op_desc)
 
         res = self.app.get('/api/v1/parcels/%s' % self.parcel_id,
                            headers=auth_header(download_token,
@@ -133,7 +156,13 @@ class ParcelsTest(unittest.TestCase):
 
     def test_remove(self):
         self.test_upload()
-        remove_token = self.generate_token(self.owner.user_id, "remove")
+
+        op_desc = {
+            "name": "remove",
+            "id": self.parcel_id
+        }
+
+        remove_token = self.generate_token(self.owner.user_id, op_desc)
 
         res = self.app.delete('/api/v1/parcels/%s' % self.parcel_id,
                               headers=auth_header(remove_token,

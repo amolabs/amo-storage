@@ -41,7 +41,7 @@ def auth_required(f):
             'DELETE': 'remove',
         }
         # Check if token is available to perform operation
-        if method_operation_map.get(request.method) != payload.get('operation'):
+        if method_operation_map.get(request.method) != payload.get('operation').get('name'):
             return jsonify({"error": "Token does not have permission to perform the operation"}), 403
 
         # Verify signature

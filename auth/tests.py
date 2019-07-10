@@ -10,7 +10,7 @@ from config import AuthConfig
 from typing import Dict
 
 
-def auth_payload(user_id: str , operation_desc: Dict):
+def auth_payload(user_id: str, operation_desc: Dict):
     return json.dumps(dict(
         user=user_id,
         operation=operation_desc,
