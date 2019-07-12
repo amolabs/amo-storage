@@ -8,6 +8,18 @@ from amo_storage import redis
 from config import AuthConfig
 import pickle
 
+
+def get_payload(token):
+    try:
+        payload = jwt.decode(token, AuthConfig.SECRET, algorithms=['HS256'])
+        if payload.get('user') is None or payload.get('operation') is None:
+            return None, None
+        key = payload.get('user') + ":" + str(pickle.dumps(payload.get('operation')))
+        return payload, key
+    except:
+        return None, None
+
+
 def auth_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -21,16 +33,12 @@ def auth_required(f):
 
         if token is None or encoded_public_key is None or encoded_signature is None:
             return jsonify({"error": "One or more required fields do not exist in the header"}), 403
-        try:
-            payload = jwt.decode(token, AuthConfig.SECRET, algorithms=['HS256'])
-        except:
-            return jsonify({"error": "Invalid token"}), 403
+        payload, key = get_payload(token)
 
-        if payload.get('user') is None or payload.get('operation') is None:
+        if payload is None:
             return jsonify({"error": "Invalid token"}), 403
-
         # Check if token exists
-        if redis.get(payload.get('user') + ":" + str(pickle.dumps(payload.get('operation')))) is None:
+        if redis.get(key) is None:
             return jsonify({"error": "Token does not exist"}), 403
 
         g.user = payload.get('user')

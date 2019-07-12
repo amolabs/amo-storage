@@ -8,16 +8,15 @@ from jsonschema.exceptions import best_match
 from Crypto.Hash import SHA256
 from sqlalchemy.exc import IntegrityError
 
-from amo_storage import db
+from amo_storage import db, redis
 from parcels.schema import schema
-from auth.decorators import auth_required
+from auth.decorators import auth_required, get_payload
 from amo_storage import ceph
 from adapter.exception import CephAdapterError
 from config import AmoBlockchainNodeConfig as NodeConfig
 from config import AmoStorageConfig
 from models.metadata import MetaData
 from models.ownership import Ownership
-
 
 class ParcelsAPI(MethodView):
 
@@ -43,6 +42,23 @@ class ParcelsAPI(MethodView):
         })
         res = requests.post(NodeConfig.end_point(), data=request_body, headers=request_headers)
         return res
+
+    def _delete_key(self, req):
+
+        token = req.headers.get('X-Auth-Token')
+        encoded_public_key = req.headers.get('X-Public-Key')
+        encoded_signature = req.headers.get('X-Signature')
+
+        if token is None or encoded_public_key is None or encoded_signature is None:
+            print("delete key error: Invalid header")
+            return
+        payload, key = get_payload(token)
+
+        if payload is None:
+            print("delete key error: Invalid payload")
+            return
+
+        redis.delete(key)
 
     def get(self, parcel_id: str):
         # Inspect operation and owner query
@@ -76,6 +92,7 @@ class ParcelsAPI(MethodView):
             """
             try:
                 data = ceph.download(parcel_id).hex()
+                self._delete_key(request)
             except CephAdapterError as e:
                 return jsonify({"error": e.msg}), 500
 
@@ -117,6 +134,7 @@ class ParcelsAPI(MethodView):
 
         try:
             ceph.upload(parcel_id, data)
+            self._delete_key(request)
         except CephAdapterError as e:
             # To operate atomic
             db.session.delete(ownership_obj)
@@ -146,6 +164,8 @@ class ParcelsAPI(MethodView):
 
         try:
             ceph.remove(parcel_id)
+            self._delete_key(request)
+
         except CephAdapterError as e:
             # To operate atomic
             db.session.add(ownership_obj)
