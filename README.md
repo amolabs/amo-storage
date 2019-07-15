@@ -58,18 +58,30 @@ The operations which need authorization process like `upload`, `download`, `remo
 
 To acquire `ACCESS_TOKEN`, client should have to send `POST` request to `auth` API with below data in the request body. 
 ```
-{"user": user_identity, "operation": operation_name"}
+{"user": user_identity, "operation": operation_description"}
 ```
-The `user_indentity` is the account address described on [AMO storage Documents](https://github.com/amolabs/docs/blob/master/storage.md) and `operation_name` is operation's name and should be all lowercase names. The `operation_name` can be `"upload"`, `"download"`, `"remove"`. `inspect` operation is not included because `inspect` operation should be requested without `auth`. 
+The `user_indentity` is the user account address in [AMO ecosystem](https://github.com/amolabs/docs/blob/master/storage.md#user-identity) and `operation_description` is composed of operation's name and parcel id or hash data like described below.
+```
+/* for `download`, `remove` operations */
+{"name": operation_name, "id": parcel_id"}
+
+/* for `upload` operation only */
+{"name": operation_name, "hash":data_body_256_hash"} 
+```
+
+The `operation_name` can be `"upload"`, `"download"`, `"remove"` and should be all lowercase names. 
+`inspect` operation is not included because `inspect` operation should be requested without `auth`. For more detail, see the [Operation Description](https://github.com/amolabs/docs/blob/master/storage.md#api-operations). 
 
 When the `ACCESS_TOKEN` is acquired, requesting client can construct request headers for an authorization. The request header must contains `X-Auth-Token`, `X-Public-Key`, `X-Signature` values. `X-Auth-Token` should be `ACCESS_TOKEN` value and `X-Public-Key` should be user's public key and it must be base64 url-safe encoded format. Finally, `X-Signature` should be `ACCESS_TOKEN` which is signed with user's private key and it must be base64 url-safe encoded format. Then, a client should send a request with those headers included.
+
 
 #### Error 
 When error is occurred, server will return the proper HTTP error code with response body : `{"error":{ERROR_MESSAGE}}`.
 
 #### Body Parameter Detail
-Each API's request body parameter is well defined on [AMO storage Documents](https://github.com/amolabs/docs/blob/master/storage.md).
- 
+* Each request body is `JSON-encoded` format.
+* Each API's request body parameter is well defined on [AMO storage Documents](https://github.com/amolabs/docs/blob/master/storage.md).
+
 ### Auth API
 ```http
 POST /api/{api_version}/auth
@@ -79,7 +91,7 @@ POST /api/{api_version}/auth
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | `user` | `string` | **Required**. user_identity |
-| `operation` | `string` | **Required**. operation_name |
+| `operation` | `JSON object` | **Required**. operation_description |
 
 #### Response Body
 

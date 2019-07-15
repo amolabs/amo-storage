@@ -7,17 +7,37 @@ from Crypto.Hash import SHA256
 from Crypto.Signature import DSS
 import jwt
 from config import AuthConfig
+from typing import Dict
+
+
+def auth_payload(user_id: str, operation_desc: Dict):
+    return json.dumps(dict(
+        user=user_id,
+        operation=operation_desc,
+    ))
+
+
+def auth_header(jwt, public_key, signature):
+    return {
+        'X-Auth-Token': jwt,
+        'X-Public-Key': public_key,
+        'X-Signature': signature,
+    }
 
 
 class AuthTest(unittest.TestCase):
 
     def create_app(self):
         return create_app_base(
-            SQLALCHEMY_DATABASE_URI='sqlite:////Users/jayden/Works/amo-storage/auth_test.db',
+            SQLALCHEMY_DATABASE_URI='sqlite://///Users/elon/Documents/develop/amo-storage/auth_test.db',
             REDIS_DB=1,
         )
 
     def setUp(self):
+        self.test_operation_desc = {
+            "name": "download",
+            "id": "1234"
+        }
         self.app_factory = self.create_app()
         self.app = self.app_factory.test_client()
         with self.app_factory.app_context():
@@ -28,23 +48,11 @@ class AuthTest(unittest.TestCase):
             db.drop_all()
             redis.flushdb()
 
-    def auth_payload(self, user_id, operation_name):
-        return json.dumps(dict(
-            user=user_id,
-            operation=operation_name,
-        ))
-
-    def auth_header(self, jwt, public_key, signature):
-        return {
-            'X-Auth-Token': jwt,
-            'X-Public-Key': public_key,
-            'X-Signature': signature,
-        }
-
     def test_token_generation(self):
         # Success case
+        
         res = self.app.post('/api/v1/auth',
-                            data=self.auth_payload('amo', 'download'),
+                            data=auth_payload('amo', self.test_operation_desc),
                             content_type='application/json')
         assert res.status_code == 200
 
@@ -53,23 +61,48 @@ class AuthTest(unittest.TestCase):
 
         # Fail case - without user
         res = self.app.post('/api/v1/auth',
-                            data=self.auth_payload(None, 'download'))
+                            data=auth_payload(None, self.test_operation_desc))
         assert res.status_code == 400
 
         # Fail case - without operation
         res = self.app.post('/api/v1/auth',
-                            data=self.auth_payload('amo', None))
+                            data=auth_payload('amo', None))
         assert res.status_code == 400
 
         # Fail case - invalid operation_name
+        
+        operation_desc_fail1 = {
+            "name": "hello",
+            "id": "1234"
+        }
         res = self.app.post('/api/v1/auth',
-                            data=self.auth_payload('amo', 'hello'))
+                            data=auth_payload('amo', operation_desc_fail1))
+        assert res.status_code == 400
+
+        # Fail case - invalid operation description
+        # Download operation requires not `hash` but `id` field.
+        operation_desc_fail2 = {
+            "name": "download",
+            "hash": "1234"
+        }
+        res = self.app.post('/api/v1/auth',
+                            data=auth_payload('amo', operation_desc_fail2))
+        assert res.status_code == 400
+
+        # Upload operation requires not `id` but `hash` field.
+        operation_desc_fail3 = {
+            "name": "upload",
+            "id": "1234"
+        }
+        res = self.app.post('/api/v1/auth',
+                            data=auth_payload('amo', operation_desc_fail3))
         assert res.status_code == 400
 
     def test_authentication(self):
         # Generate token
+
         res = self.app.post('/api/v1/auth',
-                            data=self.auth_payload('amo', 'download'),
+                            data=auth_payload('amo', self.test_operation_desc),
                             content_type='application/json')
         assert res.status_code == 200
 
@@ -85,13 +118,13 @@ class AuthTest(unittest.TestCase):
 
         # Authentication must fail - Missing mandatory field in the header
         res = self.app.get('/api/v1/parcels/abc',
-                           headers=self.auth_header(token, None, signature),
+                           headers=auth_header(token, None, signature),
                            content_type='application/json')
         assert res.status_code == 403
 
         # Authentication must fail - Invalid token
         res = self.app.get('/api/v1/parcels/abc',
-                           headers=self.auth_header("failuretoken", public_key, signature),
+                           headers=auth_header("failuretoken", public_key, signature),
                            content_type='application/json')
         assert res.status_code == 403
 
@@ -101,18 +134,18 @@ class AuthTest(unittest.TestCase):
                                  key=AuthConfig.SECRET,
                                  algorithm=AuthConfig.ALGORITHM).decode('utf-8')
         res = self.app.get('/api/v1/parcels/abc',
-                           headers=self.auth_header(encoded_jwt, public_key, signature),
+                           headers=auth_header(encoded_jwt, public_key, signature),
                            content_type='application/json')
         assert res.status_code == 403
 
         # Authentication must fail - Token does not have permission to perform operation
         res = self.app.delete('/api/v1/parcels/abc',
-                              headers=self.auth_header(token, public_key, signature),
+                              headers=auth_header(token, public_key, signature),
                               content_type='application/json')
         assert res.status_code == 403
 
         # Authentication must fail - Verification must fail due to invalid public key
         res = self.app.get('/api/v1/parcels/abc',
-                           headers=self.auth_header(encoded_jwt, public_key[::-1], signature),
+                           headers=auth_header(encoded_jwt, public_key[::-1], signature),
                            content_type='application/json')
         assert res.status_code == 403

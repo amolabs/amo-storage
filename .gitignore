@@ -45,7 +45,8 @@ ENV/
 env.bak/
 venv.bak/
 
-
+*.db
+.idea
 .DS_Store
 key.json
 sftp.json
