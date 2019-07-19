@@ -6,7 +6,7 @@ import jwt
 import uuid
 import pickle
 from auth.schema import schema
-from config import AuthConfig
+from flask import current_app
 from amo_storage import redis
 
 
@@ -23,12 +23,12 @@ class AuthAPI(MethodView):
         if error:
             return jsonify({'error': error.message}), 400
 
-        auth_json['iss'] = AuthConfig.ISSUER
+        auth_json['iss'] = current_app.config.AuthConfig["ISSUER"]
         auth_json['jti'] = str(uuid.uuid4())
 
         encoded_jwt = jwt.encode(payload=auth_json,
-                                 key=AuthConfig.SECRET,
-                                 algorithm=AuthConfig.ALGORITHM).decode('utf-8')
+                                 key=current_app.config.AuthConfig["SECRET"],
+                                 algorithm=current_app.config.AuthConfig["ALGORITHM"]).decode('utf-8')
         redis.set(auth_json.get('user') + ':' + str(pickle.dumps(auth_json.get('operation'))), encoded_jwt)
 
         return jsonify({'token': encoded_jwt}), 200

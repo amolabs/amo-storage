@@ -5,13 +5,13 @@ from Crypto.PublicKey import ECC
 from Crypto.Signature import DSS
 from Crypto.Hash import SHA256
 from amo_storage import redis
-from config import AuthConfig
 import pickle
+from flask import current_app
 
 
 def get_payload(token):
     try:
-        payload = jwt.decode(token, AuthConfig.SECRET, algorithms=['HS256'])
+        payload = jwt.decode(token, current_app.config.AuthConfig["SECRET"], algorithms=['HS256'])
         if payload.get('user') is None or payload.get('operation') is None:
             return None, None
         key = payload.get('user') + ":" + str(pickle.dumps(payload.get('operation')))
