@@ -8,7 +8,7 @@ from flask_iniconfig import INIConfig
 db = SQLAlchemy()
 redis = Redis()
 ceph = CephAdapter()
-
+DEFAULT_CONFIG_PATH = "config.ini"
 
 def create_app(**config_overrides):
     app = Flask(__name__)
@@ -16,10 +16,16 @@ def create_app(**config_overrides):
     CORS(app, supports_credentials=True)
 
     #app.config.from_object(AmoStorageConfig)
-    app.config.from_inifile('config.ini', objectify=True)
+
+    config_path = DEFAULT_CONFIG_PATH
+    if "CONFIG_PATH" in config_overrides:
+        config_path = config_overrides["CONFIG_PATH"]
+
+    app.config.from_inifile(config_path, objectify=True)
     # Apply overrides for testing
+
+    app.config.update(app.config.AmoStorageConfig)
     app.config.update(config_overrides)
-    app.config.update(app.config.CephConfig)
 
     db.init_app(app)
     redis.init_app(app)

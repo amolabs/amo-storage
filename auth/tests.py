@@ -27,8 +27,7 @@ class AuthTest(unittest.TestCase):
 
     def create_app(self):
         return create_app_base(
-            SQLALCHEMY_DATABASE_URI='sqlite://///Users/elon/Documents/develop/amo-storage/auth_test.db',
-            REDIS_DB=1,
+            CONFIG_PATH="auth/test_config.ini"
         )
 
     def setUp(self):
