@@ -16,6 +16,6 @@ class CephUtil:
                 else:
                     print("access key, secret key are not exsits.")
                     return None
-        except EnvironmentError:
-            print("Cannot open the key file.")
+        except EnvironmentError as e:
+            print("Cannot open the key file.", e)
             return None

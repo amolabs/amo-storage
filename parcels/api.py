@@ -13,8 +13,7 @@ from parcels.schema import schema
 from auth.decorators import auth_required, get_payload
 from amo_storage import ceph
 from adapter.exception import CephAdapterError
-from config import AmoBlockchainNodeConfig as NodeConfig
-from config import AmoStorageConfig
+from flask import current_app
 from models.metadata import MetaData
 from models.ownership import Ownership
 
@@ -25,6 +24,9 @@ class ParcelsAPI(MethodView):
     def __init__(self):
         if request.method not in ['GET', 'POST', 'DELETE', ]:
             abort(405)
+
+    def _end_point(cls, host, port):
+        return "http://{0}:{1}".format(host, port)
 
     def _usage_query(self, parcel_id: str, buyer: str):
         # AMO-Based-ACL
@@ -40,7 +42,10 @@ class ParcelsAPI(MethodView):
                 "data": json.dumps({"buyer": buyer, "target": parcel_id}).hex()
             }
         })
-        res = requests.post(NodeConfig.end_point(), data=request_body, headers=request_headers)
+
+        endpoint = self._end_point(current_app.config.AmoBlockchainNodeConfig["HOST"], str(current_app.config.AmoBlockchainNodeConfig["PORT"]))
+
+        res = requests.post(endpoint, data=request_body, headers=request_headers)
         return res
 
     def _delete_key(self, req):
@@ -117,7 +122,7 @@ class ParcelsAPI(MethodView):
         owner = parcels_json.get("owner")
         metadata = parcels_json.get("metadata")
         data = bytes.fromhex(parcels_json.get("data"))
-        parcel_id = AmoStorageConfig.SERVICE_ID + ':' + SHA256.new(data).digest().hex()
+        parcel_id = str(current_app.config.AmoStorageConfig["SERVICE_ID"]) + ':' + SHA256.new(data).digest().hex()
 
         ownership_obj = Ownership(parcel_id=parcel_id, owner=owner)
         metadata_obj = MetaData(parcel_id=parcel_id, parcel_meta=metadata)

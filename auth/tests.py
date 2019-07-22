@@ -6,9 +6,7 @@ from Crypto.PublicKey import ECC
 from Crypto.Hash import SHA256
 from Crypto.Signature import DSS
 import jwt
-from config import AuthConfig
 from typing import Dict
-
 
 def auth_payload(user_id: str, operation_desc: Dict):
     return json.dumps(dict(
@@ -29,8 +27,7 @@ class AuthTest(unittest.TestCase):
 
     def create_app(self):
         return create_app_base(
-            SQLALCHEMY_DATABASE_URI='sqlite://///Users/elon/Documents/develop/amo-storage/auth_test.db',
-            REDIS_DB=1,
+            CONFIG_PATH="auth/test_config.ini"
         )
 
     def setUp(self):
@@ -131,8 +128,8 @@ class AuthTest(unittest.TestCase):
         # Authentication must fail - Token does not exists
         temp_dict = {"user": "key", "operation": "value"}
         encoded_jwt = jwt.encode(payload=temp_dict,
-                                 key=AuthConfig.SECRET,
-                                 algorithm=AuthConfig.ALGORITHM).decode('utf-8')
+                                 key=self.app_factory.config.AuthConfig["SECRET"],
+                                 algorithm=self.app_factory.config.AuthConfig["ALGORITHM"]).decode('utf-8')
         res = self.app.get('/api/v1/parcels/abc',
                            headers=auth_header(encoded_jwt, public_key, signature),
                            content_type='application/json')
