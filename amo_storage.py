@@ -15,14 +15,11 @@ def create_app(**config_overrides):
     INIConfig(app)
     CORS(app, supports_credentials=True)
 
-    #app.config.from_object(AmoStorageConfig)
-
     config_path = DEFAULT_CONFIG_PATH
     if "CONFIG_PATH" in config_overrides:
         config_path = config_overrides["CONFIG_PATH"]
 
     app.config.from_inifile(config_path, objectify=True)
-    # Apply overrides for testing
 
     app.config.update(app.config.AmoStorageConfig)
     app.config.update(config_overrides)
