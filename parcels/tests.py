@@ -56,8 +56,7 @@ class ParcelsTest(unittest.TestCase):
 
     def create_app(self):
         return create_app_base(
-            SQLALCHEMY_DATABASE_URI='sqlite:////Users/elon/Documents/develop/amo-storage/parcels_test.db',
-            REDIS_DB=1,
+            CONFIG_PATH="parcels/test_config.ini"
         )
 
     def setUp(self):

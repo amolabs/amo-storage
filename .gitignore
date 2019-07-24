@@ -51,3 +51,4 @@ venv.bak/
 key.json
 sftp.json
 adapter_test.py
+test_config.ini
