@@ -1,10 +1,10 @@
 # AMO Storage Service
 
 ## Introduction
-Ceph adapter for Amo storage service.
-- Support RESTful API for data operations
-- Support JWT authorization featuring challenge-response scheme
-
+Service for storing data which is traded on AMO Blockchain
+- Support REST API for operations related to CRUD of data
+- Support authentication based on client's identity in AMO blockchain
+- Support authorization through communication with AMO blockchain
 
 ## How to Start
 ### Pre-requisites
@@ -15,8 +15,43 @@ Ceph adapter for Amo storage service.
 	
 
 ### Configurations
+All of the configurations can be set in config.ini file.
+Below is an example of config.ini
+You should set configurations for your environment.
+```ini
+[AmoStorageConfig]
+; App configurations
+DEBUG=0
 
-#### CEPH Configuration
+; SQLite Configurations
+SQLALCHEMY_TRACK_MODIFICATIONS=0
+SQLALCHEMY_DATABASE_URI=sqlite:////tmp/amo_storage.db
+
+; Redis Configurations
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_DB=0
+
+; Service ID for data parcel
+SERVICE_ID=00000001
+
+[AuthConfig]
+ISSUER=amo-storage
+ALGORITHM=HS256
+SECRET=your-sercret
+
+[CephConfig]
+HOST=127.0.0.1
+PORT=7480
+KEY_FILE_PATH=key.json
+BUCKET_NAME=amo
+
+[AmoBlockchainNodeConfig]
+HOST=127.0.0.1
+PORT=26657
+```
+
+#### Setting key file for CEPH authentication
 ***NOTE:*** *This section is not for the CEPH's configuration or configuring the CEPH cluster itself but for connecting to existing CEPH properly.* 
 ***It is assumed that the CEPH cluster is constructed and configured separately*** and
 ***it is assumed that there exists a CEPH Rados Gateway running.***
@@ -39,14 +74,20 @@ To run AMO-Storage API server, some dependencies must be installed. Install via 
 $ pip3 install -r requirements.txt
 ```
 
-And then run flask server via below command.
+And then run amo-stroage service via below command.
 ```shell
-$ python3 main.py 0.0.0.0:{PORT}
+$ export FLASK_APP=amo_storage.py
+$ flask run
+* running on http://127.0.0.1:5000
+```
+Also you can run amo-storage service on specific host and port via below command.
+```shell
+$ flask run --host {host} --port {port}
 ```
 
 ## APIs
 ### Authorization
-The operations which need authorization process like `upload`, `download`, `remove` should be requested with authorization headers like below. 
+The operations which need authorization process like `upload`, `download` and `remove` should be requested with authorization headers as below. 
 
 #### Request Headers
 | Parameter | Type | Description |
@@ -69,7 +110,7 @@ The `user_indentity` is the user account address in [AMO ecosystem](https://gith
 {"name": operation_name, "hash":data_body_256_hash"} 
 ```
 
-The `operation_name` can be `"upload"`, `"download"`, `"remove"` and should be all lowercase names. 
+The `operation_name` can be `"upload"`, `"download"`, `"remove"` and should be lowercase. 
 `inspect` operation is not included because `inspect` operation should be requested without `auth`. For more detail, see the [Operation Description](https://github.com/amolabs/docs/blob/master/storage.md#api-operations). 
 
 When the `ACCESS_TOKEN` is acquired, requesting client can construct request headers for an authorization. The request header must contains `X-Auth-Token`, `X-Public-Key`, `X-Signature` values. `X-Auth-Token` should be `ACCESS_TOKEN` value and `X-Public-Key` should be user's public key and it must be base64 url-safe encoded format. Finally, `X-Signature` should be `ACCESS_TOKEN` which is signed with user's private key and it must be base64 url-safe encoded format. Then, a client should send a request with those headers included.
@@ -95,7 +136,7 @@ POST /api/{api_version}/auth
 
 #### Response Body
 
-```json
+```
 {
   "token": ACCESS_TOKEN
 }
@@ -117,7 +158,7 @@ POST /api/{api_version}/parcels
 
 ##### Metadata form
 Metadata field is a schemeless JSON form, but the `owner` field must be included.
-```json
+```
 {
   "owner": user_identity, // Mandantory field
   ...
@@ -125,7 +166,7 @@ Metadata field is a schemeless JSON form, but the `owner` field must be included
 ```
 
 #### Response Body
-```json
+```
 {
   "id": data_parcel_id
 }
@@ -141,7 +182,7 @@ GET /api/{api_version}/parcels/{parcel_id}
 | :--- | :--- | :--- |
 
 #### Response Body
-```json
+```
 {
   "id": data_parcel_id,
   "owner": user_indentity,
@@ -158,7 +199,7 @@ GET /api/{api_version}/parcels/{parcel_id}?key=metadata
 | :--- | :--- | :--- |
 
 #### Response Body
-```json
+```
 {
   "id": data_parcel_id,
   "owner": user_indentity,
@@ -176,6 +217,6 @@ DELETE /api/{api_version}/parcels/{parcel_id}
 | :--- | :--- | :--- |
 
 #### Response Body
-```json
+```
 {}
 ```
