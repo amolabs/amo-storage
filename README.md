@@ -76,13 +76,13 @@ $ pip3 install -r requirements.txt
 
 And then run amo-stroage service via below command.
 ```shell
-$ export FLASK_APP=amo_storage.py
-$ flask run
+$ python3 main.py
 * running on http://127.0.0.1:5000
 ```
-Also you can run amo-storage service on specific host and port via below command.
+
+Also you can run amo-storage service on specific host, port and config file path via below command.
 ```shell
-$ flask run --host {host} --port {port}
+$ python3 main.py --host {host} --port {port} --config_path {path to config.ini}
 ```
 
 ## APIs
