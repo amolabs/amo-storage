@@ -8,6 +8,7 @@ from Crypto.Signature import DSS
 import jwt
 from typing import Dict
 
+
 def auth_payload(user_id: str, operation_desc: Dict):
     return json.dumps(dict(
         user=user_id,
@@ -107,7 +108,11 @@ class AuthTest(unittest.TestCase):
         assert token is not None
 
         key_object = ECC.generate(curve='P-256')
-        public_key = key_object.public_key().export_key(format='DER', compress=False).hex()
+        x, y = key_object.pointQ.xy
+        xb = int.to_bytes(int(x), 32, byteorder='big')
+        yb = int.to_bytes(int(y), 32, byteorder='big')
+
+        public_key = (b'\x04' + xb + yb).hex()
 
         hash = SHA256.new(str.encode(token))
         signer = DSS.new(key_object, 'fips-186-3')
