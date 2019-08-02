@@ -56,7 +56,10 @@ class ParcelsTest(unittest.TestCase):
 
     def create_app(self):
         return create_app_base(
-            CONFIG_PATH="parcels/test_config.ini"
+            CONFIG_PATH="config.ini",
+            SQLALCHEMY_DATABASE_URI="sqlite://///Users/elenore/Documents/Develop/amo-storage/parcel_test.db",
+            HOST="172.105.221.117",
+            PORT=7480,
         )
 
     def setUp(self):

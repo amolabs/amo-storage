@@ -22,16 +22,17 @@ def create_app(**config_overrides):
     app.config.from_inifile(config_path, objectify=True)
 
     app.config.update(app.config.AmoStorageConfig)
+    app.config.update(app.config.CephConfig)
     app.config.update(config_overrides)
 
     db.init_app(app)
     redis.init_app(app)
 
     ceph.connect(
-        host=app.config.CephConfig["HOST"],
-        port=app.config.CephConfig["PORT"],
-        keyfile_path=app.config.CephConfig["KEY_FILE_PATH"],
-        default_bucket_name=app.config.CephConfig["BUCKET_NAME"]
+        host=app.config["HOST"],
+        port=app.config["PORT"],
+        keyfile_path=app.config["KEY_FILE_PATH"],
+        default_bucket_name=app.config["BUCKET_NAME"]
     )
 
     from auth.views import auth_app
