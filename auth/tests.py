@@ -27,7 +27,10 @@ class AuthTest(unittest.TestCase):
 
     def create_app(self):
         return create_app_base(
-            CONFIG_PATH="auth/test_config.ini"
+            CONFIG_PATH="config.ini",
+            SQLALCHEMY_DATABASE_URI="sqlite://///Users/elenore/Documents/Develop/amo-storage/auth_test.db",
+            HOST="172.105.221.117",
+            PORT=7480,
         )
 
     def setUp(self):
@@ -47,7 +50,7 @@ class AuthTest(unittest.TestCase):
 
     def test_token_generation(self):
         # Success case
-        
+
         res = self.app.post('/api/v1/auth',
                             data=auth_payload('amo', self.test_operation_desc),
                             content_type='application/json')
@@ -67,7 +70,7 @@ class AuthTest(unittest.TestCase):
         assert res.status_code == 400
 
         # Fail case - invalid operation_name
-        
+
         operation_desc_fail1 = {
             "name": "hello",
             "id": "1234"
