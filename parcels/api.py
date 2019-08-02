@@ -17,6 +17,7 @@ from flask import current_app
 from models.metadata import MetaData
 from models.ownership import Ownership
 
+
 class ParcelsAPI(MethodView):
 
     decorators = [auth_required]
@@ -39,11 +40,14 @@ class ParcelsAPI(MethodView):
             "method": "abci_query",
             "params": {
                 "path": "/usage",
-                "data": json.dumps({"buyer": buyer, "target": parcel_id}).hex()
+                "data": str.encode(json.dumps({"buyer": buyer, "target": parcel_id})).hex()
             }
         })
 
-        endpoint = self._end_point(current_app.config.AmoBlockchainNodeConfig["HOST"], str(current_app.config.AmoBlockchainNodeConfig["PORT"]))
+        endpoint = self._end_point(
+            current_app.config.AmoBlockchainNodeConfig["HOST"],
+            str(current_app.config.AmoBlockchainNodeConfig["PORT"])
+        )
 
         res = requests.post(endpoint, data=request_body, headers=request_headers)
         return res
@@ -86,15 +90,15 @@ class ParcelsAPI(MethodView):
         # Download operation
         else:
             # AMO blockchain based ACL. Quotation will be removed after amo-client is developed.
-            """
             res = self._usage_query(parcel_id, g.user)
             res_json = res.json()
             if res_json.get("error"):
                 return jsonify({"error": res_json.get("error")}), 502
 
-            if int(res_json.get("result").get("code")) != 0:
+            print(res_json)
+            if int(res_json.get('result').get('response').get('code', 0)) != 0:
                 return jsonify({"error": "No permission to download data parcel %s" % parcel_id}), 403
-            """
+
             try:
                 data = ceph.download(parcel_id).hex()
                 self._delete_key(request)
@@ -122,7 +126,7 @@ class ParcelsAPI(MethodView):
         owner = parcels_json.get("owner")
         metadata = parcels_json.get("metadata")
         data = bytes.fromhex(parcels_json.get("data"))
-        parcel_id = str(current_app.config.AmoStorageConfig["SERVICE_ID"]) + ':' + SHA256.new(data).digest().hex()
+        parcel_id = SHA256.new(data).digest().hex().upper()
 
         ownership_obj = Ownership(parcel_id=parcel_id, owner=owner)
         metadata_obj = MetaData(parcel_id=parcel_id, parcel_meta=metadata)

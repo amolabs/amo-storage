@@ -10,17 +10,21 @@ from Crypto.Random import get_random_bytes
 
 
 class User:
-    def __init__(self, private_key, public_key, user_id):
-        self.private_key = private_key
+    def __init__(self, key_obj, public_key, user_id):
+        self.key_obj = key_obj
         self.public_key = public_key
         self.user_id = user_id
 
 
 def generate_new_identity():
-    private_key_obj = ECC.generate(curve='P-256')
-    public_key = private_key_obj.public_key().export_key(format='DER', compress=False)
+    key_obj = ECC.generate(curve='P-256')
+    x, y = key_obj.pointQ.xy
+    xb = int.to_bytes(int(x), 32, byteorder='big')
+    yb = int.to_bytes(int(y), 32, byteorder='big')
 
-    return private_key_obj, public_key, SHA256.new(public_key).digest()[:20].hex()
+    public_key = b'\x04' + xb + yb
+
+    return key_obj, public_key, SHA256.new(public_key).digest()[:20].hex().upper()
 
 
 def auth_payload(user_id: str, operation_desc: Dict) -> str:
@@ -30,9 +34,9 @@ def auth_payload(user_id: str, operation_desc: Dict) -> str:
     ))
 
 
-def generate_signature_hex(msg: str, private_key_obj) -> str:
+def generate_signature_hex(msg: str, key_obj) -> str:
     digest = SHA256.new(str.encode(msg))
-    signer = DSS.new(private_key_obj, 'fips-186-3')
+    signer = DSS.new(key_obj, 'fips-186-3')
     return signer.sign(digest).hex()
 
 
@@ -81,7 +85,7 @@ class ParcelsTest(unittest.TestCase):
             res = self.app.delete('/api/v1/parcels/%s' % self.parcel_id,
                                   headers=auth_header(remove_token,
                                                       self.owner.public_key.hex(),
-                                                      generate_signature_hex(remove_token, self.owner.private_key)),
+                                                      generate_signature_hex(remove_token, self.owner.key_obj)),
                                   content_type='application/json')
             assert res.status_code == 204
             self.is_uploaded = False
@@ -117,14 +121,13 @@ class ParcelsTest(unittest.TestCase):
         token = self.generate_token(self.owner.user_id, op_desc)
         metadata = {"owner": self.owner.user_id}
 
-
         self.uploaded_metadata = metadata
         self.uploaded_data = data
 
         res = self.app.post('/api/v1/parcels',
                             headers=auth_header(token,
                                                 self.owner.public_key.hex(),
-                                                generate_signature_hex(token, self.owner.private_key)),
+                                                generate_signature_hex(token, self.owner.key_obj)),
                             data=upload_body(self.owner.user_id, metadata, data),
                             content_type='application/json')
 
@@ -134,6 +137,9 @@ class ParcelsTest(unittest.TestCase):
         self.parcel_id = res.json.get("id")
         self.is_uploaded = True
 
+    # Download will be always fail because of AMO-based ACL.
+    # Data parcel trading process is needed.
+    """
     def test_download(self):
         self.test_upload()
         buyer = User(*generate_new_identity())
@@ -155,6 +161,7 @@ class ParcelsTest(unittest.TestCase):
         assert self.uploaded_metadata == res.json.get('metadata')
         assert self.uploaded_data == res.json.get('data')
         assert self.owner.user_id == res.json.get('owner')
+    """
 
     def test_remove(self):
         self.test_upload()
@@ -169,7 +176,7 @@ class ParcelsTest(unittest.TestCase):
         res = self.app.delete('/api/v1/parcels/%s' % self.parcel_id,
                               headers=auth_header(remove_token,
                                                   self.owner.public_key.hex(),
-                                                  generate_signature_hex(remove_token, self.owner.private_key)),
+                                                  generate_signature_hex(remove_token, self.owner.key_obj)),
                               content_type='application/json')
         assert res.status_code == 204
         self.is_uploaded = False

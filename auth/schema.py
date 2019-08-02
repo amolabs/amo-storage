@@ -7,7 +7,7 @@ schema = {
             "properties": {
                 "name": {"type": "string", "enum": ["upload", "inspect", "download", "remove"]},
                 "id": {"type": "string"},
-                "hash": {"type": "string", "pattern": "^[a-f0-9]+$"},
+                "hash": {"type": "string", "pattern": "^[a-fA-F0-9]+$"},
             },
             "if": {
                 "properties": {"name": {"const": "upload"}},

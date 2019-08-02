@@ -3,7 +3,7 @@ schema = {
     "properties": {
         "owner": {
             "type": "string",
-            "pattern": "^[a-f0-9]{40}$"
+            "pattern": "^[a-fA-F0-9]{40}$"
         },
         "metadata": {
             "type": "object",
@@ -11,7 +11,7 @@ schema = {
         },
         "data": {
             "type": "string",
-            "pattern": "^[a-f0-9]+$"
+            "pattern": "^[a-fA-F0-9]+$"
         }
     },
     "required": ["owner", "metadata", "data"]
