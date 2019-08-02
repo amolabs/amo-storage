@@ -126,7 +126,7 @@ class ParcelsAPI(MethodView):
         owner = parcels_json.get("owner")
         metadata = parcels_json.get("metadata")
         data = bytes.fromhex(parcels_json.get("data"))
-        parcel_id = str(current_app.config.AmoStorageConfig["SERVICE_ID"]) + ':' + SHA256.new(data).digest().hex()
+        parcel_id = SHA256.new(data).digest().hex().upper()
 
         ownership_obj = Ownership(parcel_id=parcel_id, owner=owner)
         metadata_obj = MetaData(parcel_id=parcel_id, parcel_meta=metadata)
