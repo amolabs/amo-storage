@@ -89,26 +89,26 @@ class ParcelsAPI(MethodView):
                 return jsonify({}), 400
         # Download operation
         else:
-            # AMO blockchain based ACL. Quotation will be removed after amo-client is developed.
-            res = self._usage_query(parcel_id, g.user)
-            res_json = res.json()
-            if res_json.get("error"):
-                return jsonify({"error": res_json.get("error")}), 502
+            metadata = MetaData.query.filter_by(parcel_id=parcel_id).first()
+            ownership = Ownership.query.filter_by(parcel_id=parcel_id).first()
+            if metadata is None or ownership is None:
+                return jsonify({}), 404
 
-            print(res_json)
-            if int(res_json.get('result').get('response').get('code', 0)) != 0:
-                return jsonify({"error": "No permission to download data parcel %s" % parcel_id}), 403
+            if g.user != ownership.owner:
+                # AMO blockchain based ACL
+                res = self._usage_query(parcel_id, g.user)
+                res_json = res.json()
+                if res_json.get("error"):
+                    return jsonify({"error": res_json.get("error")}), 502
+
+                if int(res_json.get('result').get('response').get('code', 0)) != 0:
+                    return jsonify({"error": "No permission to download data parcel %s" % parcel_id}), 403
 
             try:
                 data = ceph.download(parcel_id).hex()
                 self._delete_key(request)
             except CephAdapterError as e:
                 return jsonify({"error": e.msg}), 500
-
-            metadata = MetaData.query.filter_by(parcel_id=parcel_id).first()
-            ownership = Ownership.query.filter_by(parcel_id=parcel_id).first()
-            if metadata is None or ownership is None:
-                return jsonify({}), 404
 
             return jsonify({
                 "id": parcel_id,
@@ -120,7 +120,6 @@ class ParcelsAPI(MethodView):
         parcels_json = request.json
         error = best_match(Draft7Validator(schema).iter_errors(parcels_json))
         if error:
-            print(error.message)
             return jsonify({"error": error.message}), 400
 
         owner = parcels_json.get("owner")
