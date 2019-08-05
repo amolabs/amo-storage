@@ -1,7 +1,7 @@
 version: "3"
 services:
   sqlite3:
-    container_name: sqlite3
+    container_name: sqlite
     image: nouchka/sqlite3:latest
     stdin_open: true
     tty: true
@@ -9,16 +9,12 @@ services:
       - sqlite:/data/db/
     ports:
       - "32000:3306"
-    networks:
-      - backend
   redis:
     image: redis:5.0.5
     ports:
       - "6379:6379"
     volumes:
       - redis:/data/redis
-    networks:
-      - backend
   flask:
     container_name: amo-storage
     build: .
@@ -28,10 +24,6 @@ services:
       - ${CONFIG_PATH}:/app/config.ini:Z
     entrypoint: python
     command: main.py --config_path /app/config.ini --host 0.0.0.0 --port 5000
-networks:
-  backend:
-    driver: bridge
-
 volumes:
   sqlite:
   redis:
