@@ -141,7 +141,11 @@ POST /api/{api_version}/auth
   "token": ACCESS_TOKEN
 }
 ```
-
+#### Errors
+| Status Code | Error Message | Description |
+| :--- | :--- | :--- |
+| 400 | Reason why request body is invalid | Invalid request body |
+| 405 | None | Invalid request method |
 
 ### Upload API
 **Auth Required**
@@ -172,6 +176,22 @@ Metadata field is a schemeless JSON form, but the `owner` field must be included
 }
 ```
 
+#### Errors
+| Status Code | Error Message | Description |
+| :--- | :--- | :--- |
+| 400 | Reason why request body is invalid | Invalid request body |
+| 403 | One or more required fields do not exist in the header | |
+| 403 | Invalid token | |
+| 403 | Token does not exist | |
+| 403 | Token does not have permission to perform the operation | |
+| 403 | Verification failed | |
+| 405 | None | Invalid request method |
+| 409 | Parcel ID `parcel_id` already exists | |
+| 500 | Error occurred on saving ownership and metadata | Database error |
+| 500 | Ceph error message | |
+
+
+
 ### Download API
 **Auth Required**
 ```http
@@ -189,6 +209,19 @@ GET /api/{api_version}/parcels/{parcel_id}
   "data": hex_encoded_binary_sequence
 }
 ```
+#### Errors
+| Status Code | Error Message | Description |
+| :--- | :--- | :--- |
+| 400 | Reason why request body is invalid | Invalid request body |
+| 403 | One or more required fields do not exist in the header | |
+| 403 | Invalid token | |
+| 403 | Token does not exist | |
+| 403 | Token is only available to perform `operation_name` | |
+| 403 | Verification failed | |
+| 403 | No permission to download data parcel | |
+| 405 | None | Invalid request method |
+| 500 | Ceph error message | |
+
 
 ### Inspect API
 ```http
@@ -206,6 +239,11 @@ GET /api/{api_version}/parcels/{parcel_id}?key=metadata
   "metadata": metadata
 }
 ```
+#### Errors
+| Status Code | Error Message | Description |
+| :--- | :--- | :--- |
+| 404 | None | parcel_id does not exist |
+| 405 | None | Invalid request method |
 
 ### Remove API
 **Auth Required**
@@ -220,3 +258,15 @@ DELETE /api/{api_version}/parcels/{parcel_id}
 ```
 {}
 ```
+#### Errors
+| Status Code | Error Message | Description |
+| :--- | :--- | :--- |
+| 403 | One or more required fields do not exist in the header | |
+| 403 | Invalid token | |
+| 403 | Token does not exist | |
+| 403 | Token does not have permission to perform the operation | |
+| 403 | Verification failed | |
+| 405 | Not allowed to remove parcel | |
+| 410 | Parcel does not exist | |
+| 500 | Error occurred on deleting ownership and metadata | Database error |
+| 500 | Ceph error message | |
