@@ -1,13 +1,11 @@
-FROM ubuntu:latest
+FROM python:3.6.9-alpine
 MAINTAINER "jayden.park@paust.io"
-RUN apt-get update \
- && apt-get install -y python3.6 python3.6-dev python3-pip \
- && cd /usr/local/bin \
- && ln -s /usr/bin/python3 python \
- && pip3 install --upgrade pip
+
+RUN echo "**** install Python ****" && \
+    apk add --no-cache gcc musl-dev && \
+    pip3 install --no-cache --upgrade pip setuptools wheel
 
 COPY . /app
 WORKDIR /app
 RUN pip3 install -r requirements.txt
-
 EXPOSE 5000
