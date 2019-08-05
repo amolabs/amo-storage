@@ -19,11 +19,11 @@ services:
     container_name: amo-storage
     build: .
     ports:
-      - "5000:5000"
+      - ${PORT}:5000
     volumes:
-      - ${CONFIG_PATH}:/app/config.ini:Z
+      - ${CONFIG_DIR_PATH}:/app/keystore/:Z
     entrypoint: python
-    command: main.py --config_path /app/config.ini --host 0.0.0.0 --port 5000
+    command: main.py --config_dir /app/keystore/config.ini --key_path /app/keystore/key.json --host 0.0.0.0 --port 5000
 volumes:
   sqlite:
   redis:

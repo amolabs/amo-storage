@@ -9,27 +9,28 @@ from sqlalchemy_utils.functions import database_exists
 db = SQLAlchemy()
 redis = Redis()
 ceph = CephAdapter()
-DEFAULT_CONFIG_PATH = "config.ini"
-DEFAULT_KEY_PATH = "key.json"
+
+DEFAULT_CONFIG_FILENAME = "config.ini"
+DEFAULT_KEY_FILENAME = "key.json"
+DEFAULT_CONFIG_DIR = "keystore"
 
 def create_app(**config_overrides):
     app = Flask(__name__)
     INIConfig(app)
     CORS(app, supports_credentials=True)
 
-    config_path = DEFAULT_CONFIG_PATH
-    if "CONFIG_PATH" in config_overrides:
-        config_path = config_overrides["CONFIG_PATH"]
+    config_dir = DEFAULT_CONFIG_DIR
 
-    key_path = DEFAULT_KEY_PATH
-    if "KEY_PATH" in config_overrides:
-        key_path = config_overrides["KEY_PATH"]
+    if "CONFIG_DIR" in config_overrides:
+        config_dir = config_overrides["CONFIG_DIR"]
+
+    config_path = config_dir + "/" + DEFAULT_CONFIG_FILENAME
+    key_path = config_dir + "/" + DEFAULT_KEY_FILENAME
 
     app.config.from_inifile(config_path, objectify=True)
 
     app.config.update(app.config.AmoStorageConfig)
     app.config.update(app.config.CephConfig)
-    app.config.update(config_overrides)
 
     db.init_app(app)
     redis.init_app(app)

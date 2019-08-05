@@ -43,7 +43,6 @@ SECRET=your-sercret
 [CephConfig]
 HOST=127.0.0.1
 PORT=7480
-KEY_FILE_PATH=key.json
 BUCKET_NAME=amo
 
 [AmoBlockchainNodeConfig]
@@ -80,9 +79,9 @@ $ python3 main.py
 * running on http://127.0.0.1:5000
 ```
 
-Also you can run amo-storage service on specific host, port and config file path via below command.
+Also you can run amo-storage service on specific host, port and config directory path via below command. Config directory is the directory where the `config.ini` and `key.json` files are located.
 ```shell
-$ python3 main.py --host {host} --port {port} --config_path {path to config.ini}
+$ python3 main.py --host {host} --port {port} --config_dir {path to config directory}
 ```
 
 ## APIs

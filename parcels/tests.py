@@ -58,13 +58,11 @@ def upload_body(owner: str, metadata: Dict, data: str) -> str:
 
 class ParcelsTest(unittest.TestCase):
 
-    CONFIG_PATH = "config.ini"
-    KEY_PATH = "key.json"
+    CONFIG_DIR = "keystore"
 
     def create_app(self):
         return create_app_base(
-            CONFIG_PATH=self.CONFIG_PATH,
-            KEY_PATH=self.KEY_PATH,
+            CONFIG_DIR=self.CONFIG_DIR,
         )
 
     def setUp(self):
