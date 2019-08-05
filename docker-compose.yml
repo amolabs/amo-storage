@@ -21,9 +21,9 @@ services:
     ports:
       - ${PORT}:5000
     volumes:
-      - ${CONFIG_DIR_PATH}:/app/keystore/:Z
+      - ${CONFIG_DIR}:/app/keystore:z
     entrypoint: python
-    command: main.py --config_dir /app/keystore/config.ini --key_path /app/keystore/key.json --host 0.0.0.0 --port 5000
+    command: main.py --config_dir /app/keystore --host 0.0.0.0 --port 5000
 volumes:
   sqlite:
   redis:
