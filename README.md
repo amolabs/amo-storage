@@ -93,8 +93,8 @@ The operations which need authorization process like `upload`, `download` and `r
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | `X-Auth-Token` | `string` | **Required**. Received `ACCESS_TOKEN` |
-| `X-Public-Key` | `string` | **Required**. User's public key (base64 url-safe encoded) |
-| `X-Signature` | `string` | **Required**. Signed `ACCESS_TOKEN` (base64 url-safe encoded) |
+| `X-Public-Key` | `string` | **Required**. User's public key (hex encoded) |
+| `X-Signature` | `string` | **Required**. Signed `ACCESS_TOKEN` (hex encoded) |
 
 
 To acquire `ACCESS_TOKEN`, client should have to send `POST` request to `auth` API with below data in the request body. 
@@ -113,8 +113,7 @@ The `user_indentity` is the user account address in [AMO ecosystem](https://gith
 The `operation_name` can be `"upload"`, `"download"`, `"remove"` and should be lowercase. 
 `inspect` operation is not included because `inspect` operation should be requested without `auth`. For more detail, see the [Operation Description](https://github.com/amolabs/docs/blob/master/storage.md#api-operations). 
 
-When the `ACCESS_TOKEN` is acquired, requesting client can construct request headers for an authorization. The request header must contains `X-Auth-Token`, `X-Public-Key`, `X-Signature` values. `X-Auth-Token` should be `ACCESS_TOKEN` value and `X-Public-Key` should be user's public key and it must be base64 url-safe encoded format. Finally, `X-Signature` should be `ACCESS_TOKEN` which is signed with user's private key and it must be base64 url-safe encoded format. Then, a client should send a request with those headers included.
-
+When the `ACCESS_TOKEN` is acquired, requesting client can construct request headers for an authorization. The request header must contains `X-Auth-Token`, `X-Public-Key`, `X-Signature` values. `X-Auth-Token` should be `ACCESS_TOKEN` value and `X-Public-Key` should be user's public key and it must be hex encoded format. Finally, `X-Signature` should be signed `ACCESS_TOKEN` which is signed with user's private key and it must be hex encoded format. Then, a client should send a request with those headers included.
 
 #### Error 
 When error is occurred, server will return the proper HTTP error code with response body : `{"error":{ERROR_MESSAGE}}`.
