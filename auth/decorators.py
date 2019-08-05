@@ -50,7 +50,9 @@ def auth_required(f):
         }
         # Check if token is available to perform operation
         if method_operation_map.get(request.method) != payload.get('operation').get('name'):
-            return jsonify({"error": "Token does not have permission to perform the operation"}), 403
+            return jsonify({
+                "error": "Token is only available to perform %s" % payload.get('operation').get('name')
+            }), 403
 
         # Verify signature
         try:
@@ -59,7 +61,6 @@ def auth_required(f):
                                            point_x=int.from_bytes(public_key_bytes[1:33], 'big'),
                                            point_y=int.from_bytes(public_key_bytes[33:65], 'big')
                                            )
-            #public_key = ECC.construct(bytes.fromhex(encoded_public_key))
             verifier = DSS.new(key=public_key_obj, mode='fips-186-3')
             digested_jwt = SHA256.new(str.encode(token))
             verifier.verify(digested_jwt, bytes.fromhex(encoded_signature))

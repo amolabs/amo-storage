@@ -137,9 +137,9 @@ class ParcelsAPI(MethodView):
         try:
             db.session.commit()
         except IntegrityError:
-            return jsonify({"error": "Identifier of parcel already exists"}), 409
+            return jsonify({"error": "Parcel ID %s already exists" % parcel_id}), 409
         except:
-            return jsonify({"error": "Error occurred on saving ownership and metadata"}), 409
+            return jsonify({"error": "Error occurred on saving ownership and metadata"}), 500
 
         try:
             ceph.upload(parcel_id, data)
@@ -149,7 +149,7 @@ class ParcelsAPI(MethodView):
             db.session.delete(ownership_obj)
             db.session.delete(metadata_obj)
             db.session.commit()
-            return jsonify({"error": e.msg}), 409
+            return jsonify({"error": e.msg}), 500
 
         return jsonify({"id": parcel_id}), 201
 
@@ -169,7 +169,7 @@ class ParcelsAPI(MethodView):
         try:
             db.session.commit()
         except:
-            return jsonify({"error": "Error occurred on deleting ownership and metadata"}), 409
+            return jsonify({"error": "Error occurred on deleting ownership and metadata"}), 500
 
         try:
             ceph.remove(parcel_id)
@@ -180,6 +180,6 @@ class ParcelsAPI(MethodView):
             db.session.add(ownership_obj)
             db.session.add(metadata_obj)
             db.session.commit()
-            return jsonify({"error": e.msg}), 409
+            return jsonify({"error": e.msg}), 500
 
         return jsonify({}), 204
