@@ -58,12 +58,13 @@ def upload_body(owner: str, metadata: Dict, data: str) -> str:
 
 class ParcelsTest(unittest.TestCase):
 
+    CONFIG_PATH = "config.ini"
+    KEY_PATH = "key.json"
+
     def create_app(self):
         return create_app_base(
-            CONFIG_PATH="config.ini",
-            SQLALCHEMY_DATABASE_URI="sqlite://///Users/elenore/Documents/Develop/amo-storage/parcel_test.db",
-            HOST="172.105.221.117",
-            PORT=7480,
+            CONFIG_PATH=self.CONFIG_PATH,
+            KEY_PATH=self.KEY_PATH,
         )
 
     def setUp(self):

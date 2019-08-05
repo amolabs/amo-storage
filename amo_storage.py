@@ -10,6 +10,7 @@ db = SQLAlchemy()
 redis = Redis()
 ceph = CephAdapter()
 DEFAULT_CONFIG_PATH = "config.ini"
+DEFAULT_KEY_PATH = "key.json"
 
 def create_app(**config_overrides):
     app = Flask(__name__)
@@ -19,6 +20,10 @@ def create_app(**config_overrides):
     config_path = DEFAULT_CONFIG_PATH
     if "CONFIG_PATH" in config_overrides:
         config_path = config_overrides["CONFIG_PATH"]
+
+    key_path = DEFAULT_KEY_PATH
+    if "KEY_PATH" in config_overrides:
+        key_path = config_overrides["KEY_PATH"]
 
     app.config.from_inifile(config_path, objectify=True)
 
@@ -38,7 +43,7 @@ def create_app(**config_overrides):
     ceph.connect(
         host=app.config["HOST"],
         port=app.config["PORT"],
-        keyfile_path=app.config["KEY_FILE_PATH"],
+        keyfile_path=key_path,
         default_bucket_name=app.config["BUCKET_NAME"]
     )
 
