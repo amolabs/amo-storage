@@ -12,7 +12,7 @@ ceph = CephAdapter()
 
 DEFAULT_CONFIG_FILENAME = "config.ini"
 DEFAULT_KEY_FILENAME = "key.json"
-DEFAULT_CONFIG_DIR = "keystore"
+DEFAULT_CONFIG_DIR = "configurations"
 
 def create_app(**config_overrides):
     app = Flask(__name__)

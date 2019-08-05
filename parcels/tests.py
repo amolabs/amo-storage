@@ -58,7 +58,7 @@ def upload_body(owner: str, metadata: Dict, data: str) -> str:
 
 class ParcelsTest(unittest.TestCase):
 
-    CONFIG_DIR = "keystore"
+    CONFIG_DIR = "configurations"
 
     def create_app(self):
         return create_app_base(

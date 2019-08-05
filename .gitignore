@@ -50,4 +50,4 @@ venv.bak/
 .DS_Store
 sftp.json
 adapter_test.py
-*_keystore*
+*_configurations*
