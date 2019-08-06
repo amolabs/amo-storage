@@ -131,7 +131,7 @@ class ParcelsTest(unittest.TestCase):
                             data=upload_body(self.owner.user_id, metadata, data),
                             content_type='application/json')
 
-        assert res.status_code == 201
+        assert res.status_code == 200
         assert res.json.get("id") is not None
 
         self.parcel_id = res.json.get("id")
@@ -139,7 +139,6 @@ class ParcelsTest(unittest.TestCase):
 
     # Download will be always fail because of AMO-based ACL.
     # Data parcel trading process is needed.
-    """
     def test_download(self):
         self.test_upload()
         buyer = User(*generate_new_identity())
@@ -154,14 +153,9 @@ class ParcelsTest(unittest.TestCase):
         res = self.app.get('/api/v1/parcels/%s' % self.parcel_id,
                            headers=auth_header(download_token,
                                                buyer.public_key.hex(),
-                                               generate_signature_hex(download_token, buyer.private_key)),
+                                               generate_signature_hex(download_token, buyer.key_obj)),
                            content_type='application/json')
-        assert res.status_code == 200
-
-        assert self.uploaded_metadata == res.json.get('metadata')
-        assert self.uploaded_data == res.json.get('data')
-        assert self.owner.user_id == res.json.get('owner')
-    """
+        assert res.status_code == 403
 
     def test_remove(self):
         self.test_upload()

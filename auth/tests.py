@@ -125,13 +125,13 @@ class AuthTest(unittest.TestCase):
         res = self.app.get('/api/v1/parcels/abc',
                            headers=auth_header(token, None, signature),
                            content_type='application/json')
-        assert res.status_code == 403
+        assert res.status_code == 401
 
         # Authentication must fail - Invalid token
         res = self.app.get('/api/v1/parcels/abc',
                            headers=auth_header("failuretoken", public_key, signature),
                            content_type='application/json')
-        assert res.status_code == 403
+        assert res.status_code == 401
 
         # Authentication must fail - Token does not exists
         temp_dict = {"user": "key", "operation": "value"}
@@ -141,16 +141,16 @@ class AuthTest(unittest.TestCase):
         res = self.app.get('/api/v1/parcels/abc',
                            headers=auth_header(encoded_jwt, public_key, signature),
                            content_type='application/json')
-        assert res.status_code == 403
+        assert res.status_code == 401
 
         # Authentication must fail - Token does not have permission to perform operation
         res = self.app.delete('/api/v1/parcels/abc',
                               headers=auth_header(token, public_key, signature),
                               content_type='application/json')
-        assert res.status_code == 403
+        assert res.status_code == 401
 
         # Authentication must fail - Verification must fail due to invalid public key
         res = self.app.get('/api/v1/parcels/abc',
                            headers=auth_header(encoded_jwt, public_key[::-1], signature),
                            content_type='application/json')
-        assert res.status_code == 403
+        assert res.status_code == 401
