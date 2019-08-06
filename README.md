@@ -15,7 +15,7 @@ Service for storing data which is traded on AMO Blockchain
 	
 
 ### Configurations
-Configurations directory should contain `config.ini` and `key.json`. The default configurations directory is provided with the name `configurations` but you can specify the configurations directory path manually. 
+Config directory should contain `config.ini` and `key.json`. The default configurations directory is provided with the name `config` but you can specify the config directory path manually. 
 
 Most of the configurations can be set in `config.ini` file except access key and secret used for connecting to CEPH.
 Below is an example of `config.ini`
@@ -81,7 +81,7 @@ $ python3 main.py
 * running on http://127.0.0.1:5000
 ```
 
-Also you can run amo-storage service on specific host, port and config directory path via below command. Configurations directory is the directory where the `config.ini` and `key.json` files are located.
+Also you can run amo-storage service on specific host, port and config directory path via below command. Config directory is the directory where the `config.ini` and `key.json` files are located.
 ```shell
 $ python3 main.py --host {host} --port {port} --config_dir {path to config directory}
 ```

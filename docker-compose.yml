@@ -21,9 +21,9 @@ services:
     ports:
       - ${PORT}:5000
     volumes:
-      - ${CONFIG_DIR}:/app/configurations:z
+      - ${CONFIG_DIR}:/app/config:z
     entrypoint: python3
-    command: main.py --config_dir /app/configurations --host 0.0.0.0 --port 5000
+    command: main.py --config_dir /app/config --host 0.0.0.0 --port 5000
 volumes:
   sqlite:
   redis:

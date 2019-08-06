@@ -16,7 +16,6 @@ class CephAdapter:
         self.default_bucket = None
         self._conn = None
 
-
     # Internal methods
     def _list_bucket(self) -> List[Bucket]:
         try:

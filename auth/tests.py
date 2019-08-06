@@ -26,7 +26,7 @@ def auth_header(jwt, public_key, signature):
 
 class AuthTest(unittest.TestCase):
 
-    CONFIG_DIR = "configurations"
+    CONFIG_DIR = "config"
 
     def create_app(self):
         return create_app_base(
