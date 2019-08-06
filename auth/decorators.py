@@ -32,14 +32,14 @@ def auth_required(f):
         encoded_signature = request.headers.get('X-Signature')
 
         if token is None or encoded_public_key is None or encoded_signature is None:
-            return jsonify({"error": "One or more required fields do not exist in the header"}), 403
+            return jsonify({"error": "One or more required fields do not exist in the header"}), 401
         payload, key = get_payload(token)
 
         if payload is None:
-            return jsonify({"error": "Invalid token"}), 403
+            return jsonify({"error": "Invalid token"}), 401
         # Check if token exists
         if redis.get(key) is None:
-            return jsonify({"error": "Token does not exist"}), 403
+            return jsonify({"error": "Token does not exist"}), 401
 
         g.user = payload.get('user')
 
@@ -52,7 +52,7 @@ def auth_required(f):
         if method_operation_map.get(request.method) != payload.get('operation').get('name'):
             return jsonify({
                 "error": "Token is only available to perform %s" % payload.get('operation').get('name')
-            }), 403
+            }), 401
 
         # Verify signature
         try:
@@ -65,7 +65,7 @@ def auth_required(f):
             digested_jwt = SHA256.new(str.encode(token))
             verifier.verify(digested_jwt, bytes.fromhex(encoded_signature))
         except ValueError:
-            return jsonify({"error": "Verification failed"}), 403
+            return jsonify({"error": "Verification failed"}), 401
 
         return f(*args, **kwargs)
     return decorated_function

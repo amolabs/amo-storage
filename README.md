@@ -179,11 +179,11 @@ Metadata field is a schemeless JSON form, but the `owner` field must be included
 | Status Code | Error Message | Description |
 | :--- | :--- | :--- |
 | 400 | Reason why request body is invalid | Invalid request body |
-| 403 | One or more required fields do not exist in the header | |
-| 403 | Invalid token | |
-| 403 | Token does not exist | |
-| 403 | Token does not have permission to perform the operation | |
-| 403 | Verification failed | |
+| 401 | One or more required fields do not exist in the header | |
+| 401 | Invalid token | |
+| 401 | Token does not exist | |
+| 401 | Token does not have permission to perform the operation | |
+| 401 | Verification failed | |
 | 405 | None | Invalid request method |
 | 409 | Parcel ID `parcel_id` already exists | |
 | 500 | Error occurred on saving ownership and metadata | Database error |
@@ -212,12 +212,12 @@ GET /api/{api_version}/parcels/{parcel_id}
 | Status Code | Error Message | Description |
 | :--- | :--- | :--- |
 | 400 | Reason why request body is invalid | Invalid request body |
-| 403 | One or more required fields do not exist in the header | |
-| 403 | Invalid token | |
-| 403 | Token does not exist | |
-| 403 | Token is only available to perform `operation_name` | |
-| 403 | Verification failed | |
-| 403 | No permission to download data parcel | |
+| 401 | One or more required fields do not exist in the header | |
+| 401 | Invalid token | |
+| 401 | Token does not exist | |
+| 401 | Token is only available to perform `operation_name` | |
+| 401 | Verification failed | |
+| 401 | No permission to download data parcel | |
 | 405 | None | Invalid request method |
 | 500 | Ceph error message | |
 
@@ -260,11 +260,11 @@ DELETE /api/{api_version}/parcels/{parcel_id}
 #### Errors
 | Status Code | Error Message | Description |
 | :--- | :--- | :--- |
-| 403 | One or more required fields do not exist in the header | |
-| 403 | Invalid token | |
-| 403 | Token does not exist | |
-| 403 | Token does not have permission to perform the operation | |
-| 403 | Verification failed | |
+| 401 | One or more required fields do not exist in the header | |
+| 401 | Invalid token | |
+| 401 | Token does not exist | |
+| 401 | Token does not have permission to perform the operation | |
+| 401 | Verification failed | |
 | 405 | Not allowed to remove parcel | |
 | 410 | Parcel does not exist | |
 | 500 | Error occurred on deleting ownership and metadata | Database error |

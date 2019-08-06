@@ -150,7 +150,7 @@ class ParcelsAPI(MethodView):
             db.session.commit()
             return jsonify({"error": e.msg}), 500
 
-        return jsonify({"id": parcel_id}), 201
+        return jsonify({"id": parcel_id}), 200
 
     def delete(self, parcel_id: str):
         ownership_obj = Ownership.query.filter_by(parcel_id=parcel_id).first()
