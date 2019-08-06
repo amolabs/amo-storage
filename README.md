@@ -6,15 +6,93 @@ Service for storing data which is traded on AMO Blockchain
 - Support authentication based on client's identity in AMO blockchain
 - Support authorization through communication with AMO blockchain
 
-## How to Start
-### Pre-requisites
+## Quick Start
+### From Docker
+#### Pre-requisites
+- [Docker](https://docs.docker.com/v17.12/docker-for-mac/install/) (higher than version 17)
+- [Docker Compose](https://docs.docker.com/compose/install/)
+
+
+#### Configurations
+Make your own config directory and put `config.ini` and `key.json` into the directory.
+Example of config.ini and key.json file is in the `./config` directory.
+You must set `REDIS_HOST` as `redis` like below.
+
+```ini
+; config.ini example
+[AmoStorageConfig]
+; App configurations
+DEBUG=0
+
+; SQLite Configurations
+SQLALCHEMY_TRACK_MODIFICATIONS=0
+SQLALCHEMY_DATABASE_URI=sqlite:////tmp/amo_storage.db
+
+; Redis Configurations
+REDIS_HOST=redis
+REDIS_PORT=6379
+REDIS_DB=0
+
+; Service ID for data parcel
+SERVICE_ID=00000001
+
+[AuthConfig]
+ISSUER=amo-storage
+ALGORITHM=HS256
+SECRET=your-sercret
+
+[CephConfig]
+HOST=127.0.0.1
+PORT=7480
+BUCKET_NAME=amo
+
+[AmoBlockchainNodeConfig]
+HOST=127.0.0.1
+PORT=26657
+```
+
+##### Setting key file for CEPH authentication
+***NOTE:*** *This section is not for the CEPH's configuration or configuring the CEPH cluster itself but for connecting to existing CEPH properly.* 
+***It is assumed that the CEPH cluster is constructed and configured separately*** and
+***it is assumed that there exists a CEPH Rados Gateway running.***
+
+- The `access_key` and `secret_key` which are used for connecting to the **Rados Gateway** can be found in the `key` attribute of CEPH user.
+(We assume there is a Rados Gateway user `amoapi` for this adapter software. This may become configurable in the future version of this software.)
+- The `access_key` and `secret_key` should be included in the `key.json` file.
+```son
+{
+    "access_key":"{USER'S_ACCESS_KEY}",
+    "secret_key":"{USER'S_SECRET_KEY}"
+}
+```
+
+Set `CONFIG_DIR` as your own config directory and set `PORT` as storage service going to listen.
+```bash
+$ export CONFIG_DIR=/tmp
+$ export PORT=5000
+```
+Or you can create `.env` at the same path of docker-compose.yml
+```
+// .env example
+CONFIG_DIR=/tmp/config.ini
+PORT=5000
+```
+#### Run
+Run below command at the same path of docker-compose.yml
+```bash
+$ docker-compose up -d
+```
+
+
+### From Source
+#### Pre-requisites
 - [Python3](https://www.python.org/downloads/release/python-368/) (compatible with 3.6.8)
 - Python3-pip (compatible with 9.0.1)
 - [Redis](https://redis.io/download) (compatible with 5.0.5)
 - [Sqlite](https://www.sqlite.org/download.html) (compatible with 5.0.5)
 	
 
-### Configurations
+#### Configurations
 Config directory should contain `config.ini` and `key.json`. The default configurations directory is provided with the name `config` but you can specify the config directory path manually. 
 
 Most of the configurations can be set in `config.ini` file except access key and secret used for connecting to CEPH.
@@ -52,22 +130,10 @@ HOST=127.0.0.1
 PORT=26657
 ```
 
-#### Setting key file for CEPH authentication
-***NOTE:*** *This section is not for the CEPH's configuration or configuring the CEPH cluster itself but for connecting to existing CEPH properly.* 
-***It is assumed that the CEPH cluster is constructed and configured separately*** and
-***it is assumed that there exists a CEPH Rados Gateway running.***
+To get more information about `key.json`, read [this section](#setting-key-file-for-ceph-authentication)
 
-- The `access_key` and `secret_key` which are used for connecting to the **Rados Gateway** can be found in the `key` attribute of CEPH user.
-(We assume there is a Rados Gateway user `amoapi` for this adapter software. This may become configurable in the future version of this software.)
-- The `access_key` and `secret_key` should be included in the `key.json` file.
-```son
-{
-    "access_key":"{USER'S_ACCESS_KEY}",
-    "secret_key":"{USER'S_SECRET_KEY}"
-}
-```
 
-### Run
+#### Run
 ***NOTE:*** *Before starting AMO-Storage API server, `redis` server daemon must be running.*
 
 To run AMO-Storage API server, some dependencies must be installed. Install via below command.
