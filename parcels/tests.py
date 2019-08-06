@@ -58,9 +58,11 @@ def upload_body(owner: str, metadata: Dict, data: str) -> str:
 
 class ParcelsTest(unittest.TestCase):
 
+    CONFIG_DIR = "config"
+
     def create_app(self):
         return create_app_base(
-            CONFIG_PATH="parcels/test_config.ini"
+            CONFIG_DIR=self.CONFIG_DIR,
         )
 
     def setUp(self):

@@ -48,7 +48,6 @@ venv.bak/
 *.db
 .idea
 .DS_Store
-key.json
 sftp.json
 adapter_test.py
-test_config.ini
+*_configurations*
