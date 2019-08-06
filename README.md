@@ -116,7 +116,6 @@ The `operation_name` can be `"upload"`, `"download"`, `"remove"` and should be l
 
 When the `ACCESS_TOKEN` is acquired, requesting client can construct request headers for an authorization. The request header must contains `X-Auth-Token`, `X-Public-Key`, `X-Signature` values. `X-Auth-Token` should be `ACCESS_TOKEN` value and `X-Public-Key` should be user's public key and it must be hex encoded format. Finally, `X-Signature` should be signed `ACCESS_TOKEN` which is signed with user's private key and it must be hex encoded format. Then, a client should send a request with those headers included.
 
-
 #### Error 
 When error is occurred, server will return the proper HTTP error code with response body : `{"error":{ERROR_MESSAGE}}`.
 
@@ -142,7 +141,11 @@ POST /api/{api_version}/auth
   "token": ACCESS_TOKEN
 }
 ```
-
+#### Errors
+| Status Code | Error Message | Description |
+| :--- | :--- | :--- |
+| 400 | Reason why request body is invalid | Invalid request body |
+| 405 | None | Invalid request method |
 
 ### Upload API
 **Auth Required**
@@ -173,6 +176,22 @@ Metadata field is a schemeless JSON form, but the `owner` field must be included
 }
 ```
 
+#### Errors
+| Status Code | Error Message | Description |
+| :--- | :--- | :--- |
+| 400 | Reason why request body is invalid | Invalid request body |
+| 401 | One or more required fields do not exist in the header | |
+| 401 | Invalid token | |
+| 401 | Token does not exist | |
+| 401 | Token does not have permission to perform the operation | |
+| 401 | Verification failed | |
+| 405 | None | Invalid request method |
+| 409 | Parcel ID `parcel_id` already exists | |
+| 500 | Error occurred on saving ownership and metadata | Database error |
+| 500 | Ceph error message | |
+
+
+
 ### Download API
 **Auth Required**
 ```http
@@ -190,6 +209,19 @@ GET /api/{api_version}/parcels/{parcel_id}
   "data": hex_encoded_binary_sequence
 }
 ```
+#### Errors
+| Status Code | Error Message | Description |
+| :--- | :--- | :--- |
+| 400 | Reason why request body is invalid | Invalid request body |
+| 401 | One or more required fields do not exist in the header | |
+| 401 | Invalid token | |
+| 401 | Token does not exist | |
+| 401 | Token is only available to perform `operation_name` | |
+| 401 | Verification failed | |
+| 401 | No permission to download data parcel | |
+| 405 | None | Invalid request method |
+| 500 | Ceph error message | |
+
 
 ### Inspect API
 ```http
@@ -207,6 +239,11 @@ GET /api/{api_version}/parcels/{parcel_id}?key=metadata
   "metadata": metadata
 }
 ```
+#### Errors
+| Status Code | Error Message | Description |
+| :--- | :--- | :--- |
+| 404 | None | parcel_id does not exist |
+| 405 | None | Invalid request method |
 
 ### Remove API
 **Auth Required**
@@ -221,3 +258,15 @@ DELETE /api/{api_version}/parcels/{parcel_id}
 ```
 {}
 ```
+#### Errors
+| Status Code | Error Message | Description |
+| :--- | :--- | :--- |
+| 401 | One or more required fields do not exist in the header | |
+| 401 | Invalid token | |
+| 401 | Token does not exist | |
+| 401 | Token does not have permission to perform the operation | |
+| 401 | Verification failed | |
+| 405 | Not allowed to remove parcel | |
+| 410 | Parcel does not exist | |
+| 500 | Error occurred on deleting ownership and metadata | Database error |
+| 500 | Ceph error message | |
