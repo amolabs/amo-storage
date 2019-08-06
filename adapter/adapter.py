@@ -16,7 +16,6 @@ class CephAdapter:
         self.default_bucket = None
         self._conn = None
 
-
     # Internal methods
     def _list_bucket(self) -> List[Bucket]:
         try:
@@ -35,6 +34,12 @@ class CephAdapter:
                 "Bucket is None", 
                 CephAdapterErrorCode.ERR_NONE_BUCKET
                 )
+
+    def _remove_all_data(self) -> None:
+
+        for key in self._list_content():
+            print("remove key : ", key.name)
+            self.remove(key.name)
 
     # Opened methods for ceph interaction
     def connect(self, host: str, port: int, keyfile_path: str, default_bucket_name: str) -> None:

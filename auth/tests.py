@@ -26,12 +26,11 @@ def auth_header(jwt, public_key, signature):
 
 class AuthTest(unittest.TestCase):
 
+    CONFIG_DIR = "config"
+
     def create_app(self):
         return create_app_base(
-            CONFIG_PATH="config.ini",
-            SQLALCHEMY_DATABASE_URI="sqlite://///Users/elenore/Documents/Develop/amo-storage/auth_test.db",
-            HOST="172.105.221.117",
-            PORT=7480,
+            CONFIG_DIR=self.CONFIG_DIR,
         )
 
     def setUp(self):
