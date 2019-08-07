@@ -74,7 +74,7 @@ $ export PORT=5000
 Or you can create `.env` at the same path of docker-compose.yml
 ```
 // .env example
-CONFIG_DIR=/tmp/config.ini
+CONFIG_DIR=/tmp
 PORT=5000
 ```
 #### Run
