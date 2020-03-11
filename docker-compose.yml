@@ -1,14 +1,14 @@
 version: "3"
 services:
-  sqlite3:
-    container_name: sqlite
-    image: nouchka/sqlite3:latest
-    stdin_open: true
-    tty: true
-    volumes:
-      - sqlite:/data/db/
+  mariadb:
+    image: mariadb:10.5
+    environment:
+      MYSQL_USER: amo
+      MYSQL_PASSWORD: amo-storage
     ports:
-      - "32000:3306"
+      - "3306:3306"
+    volumes:
+      - mariadb:/var/lib/mysql
   redis:
     image: redis:5.0.5
     ports:
@@ -25,5 +25,5 @@ services:
     entrypoint: python3
     command: main.py --config_dir /app/config --host 0.0.0.0 --port 5000
 volumes:
-  sqlite:
+  mariadb:
   redis:

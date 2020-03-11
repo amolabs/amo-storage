@@ -1,21 +1,24 @@
-from flask.views import MethodView
-from flask import request, abort, jsonify, g
-import requests
-import uuid
 import json
+import uuid
+
+import requests
+from Crypto.Hash import SHA256
+from flask import current_app
+from flask import request, abort, jsonify, g
+from flask.views import MethodView
 from jsonschema import Draft7Validator
 from jsonschema.exceptions import best_match
-from Crypto.Hash import SHA256
 from sqlalchemy.exc import IntegrityError
 
-from amo_storage import db, redis
-from parcels.schema import schema
-from auth.decorators import auth_required, get_payload
-from amo_storage import ceph
 from adapter.exception import CephAdapterError
-from flask import current_app
+from adapter.fs_adapter import FileSystemAdapter
+from amo_storage import db, redis
+from auth.decorators import get_payload, auth_required
 from models.metadata import MetaData
 from models.ownership import Ownership
+from parcels.schema import schema
+
+fs_adapter = FileSystemAdapter()
 
 
 class ParcelsAPI(MethodView):
@@ -105,7 +108,7 @@ class ParcelsAPI(MethodView):
                     return jsonify({"error": "No permission to download data parcel %s" % parcel_id}), 403
 
             try:
-                data = ceph.download(parcel_id).hex()
+                data = fs_adapter.download(parcel_id).hex()
                 self._delete_key(request)
             except CephAdapterError as e:
                 return jsonify({"error": e.msg}), 500
@@ -141,7 +144,7 @@ class ParcelsAPI(MethodView):
             return jsonify({"error": "Error occurred on saving ownership and metadata"}), 500
 
         try:
-            ceph.upload(parcel_id, data)
+            fs_adapter.upload(parcel_id, data)
             self._delete_key(request)
         except CephAdapterError as e:
             # To operate atomic
@@ -171,7 +174,7 @@ class ParcelsAPI(MethodView):
             return jsonify({"error": "Error occurred on deleting ownership and metadata"}), 500
 
         try:
-            ceph.remove(parcel_id)
+            fs_adapter.remove(parcel_id)
             self._delete_key(request)
 
         except CephAdapterError as e:
