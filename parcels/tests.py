@@ -58,7 +58,7 @@ def upload_body(owner: str, metadata: Dict, data: str) -> str:
 
 class ParcelsTest(unittest.TestCase):
 
-    CONFIG_DIR = "config"
+    CONFIG_DIR = "../config"
 
     def create_app(self):
         return create_app_base(
@@ -118,7 +118,11 @@ class ParcelsTest(unittest.TestCase):
         }
 
         token = self.generate_token(self.owner.user_id, op_desc)
-        metadata = {"owner": self.owner.user_id}
+        metadata = {
+            "owner": self.owner.user_id,
+            "name": "test",
+            "path": "/data/parcels/hello.txt"
+        }
 
         self.uploaded_metadata = metadata
         self.uploaded_data = data

@@ -21,7 +21,9 @@ class FileSystemAdapter:
             return f.read(size)
 
     def upload(self, parcel_id: str, data: bytes):
-        raise NotImplementedError
+        # TODO
+        pass
 
     def remove(self, parcel_id: str):
-        raise NotImplementedError
+        # TODO
+        pass

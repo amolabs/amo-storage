@@ -3,7 +3,7 @@ import uuid
 
 import requests
 from Crypto.Hash import SHA256
-from flask import current_app
+from flask import current_app, send_from_directory
 from flask import request, abort, jsonify, g
 from flask.views import MethodView
 from jsonschema import Draft7Validator
@@ -14,6 +14,7 @@ from adapter.exception import CephAdapterError
 from adapter.fs_adapter import FileSystemAdapter
 from amo_storage import db, redis
 from auth.decorators import get_payload, auth_required
+from models.filesystem import FileSystem
 from models.metadata import MetaData
 from models.ownership import Ownership
 from parcels.schema import schema
@@ -104,20 +105,9 @@ class ParcelsAPI(MethodView):
                 if res_json.get("error"):
                     return jsonify({"error": res_json.get("error")}), 502
 
-                if int(res_json.get('result').get('response').get('code', 0)) != 0:
-                    return jsonify({"error": "No permission to download data parcel %s" % parcel_id}), 403
+            fs = FileSystem.query.filter_by(parcel_id=parcel_id).first()
 
-            try:
-                data = fs_adapter.download(parcel_id).hex()
-                self._delete_key(request)
-            except CephAdapterError as e:
-                return jsonify({"error": e.msg}), 500
-
-            return jsonify({
-                "id": parcel_id,
-                "owner": ownership.owner,
-                "metadata": metadata.parcel_meta,
-                "data": data}), 200
+            return send_from_directory(fs.parcel_path, fs.parcel_name)
 
     def post(self):
         parcels_json = request.json
@@ -128,13 +118,18 @@ class ParcelsAPI(MethodView):
         owner = parcels_json.get("owner")
         metadata = parcels_json.get("metadata")
         data = bytes.fromhex(parcels_json.get("data"))
-        parcel_id = SHA256.new(data).digest().hex().upper()
+        parcel_id = SHA256.new(data)
+        parcel_id.update(metadata["path"].encode())
+        parcel_id.update(metadata["name"].encode())
+        parcel_id = parcel_id.digest().hex().upper()
 
         ownership_obj = Ownership(parcel_id=parcel_id, owner=owner)
         metadata_obj = MetaData(parcel_id=parcel_id, parcel_meta=metadata)
+        filesystem_obj = FileSystem(parcel_id=parcel_id, parcel_path=metadata["path"], parcel_name=metadata["name"])
 
         db.session.add(ownership_obj)
         db.session.add(metadata_obj)
+        db.session.add(filesystem_obj)
 
         try:
             db.session.commit()
@@ -158,6 +153,7 @@ class ParcelsAPI(MethodView):
     def delete(self, parcel_id: str):
         ownership_obj = Ownership.query.filter_by(parcel_id=parcel_id).first()
         metadata_obj = MetaData.query.filter_by(parcel_id=parcel_id).first()
+        filesystem_obj = FileSystem.query.filter_by(parcel_id=parcel_id).first()
 
         if ownership_obj is None or metadata_obj is None:
             return jsonify({"error": "Parcel does not exist"}), 410
@@ -167,6 +163,7 @@ class ParcelsAPI(MethodView):
 
         db.session.delete(ownership_obj)
         db.session.delete(metadata_obj)
+        db.session.delete(filesystem_obj)
 
         try:
             db.session.commit()
@@ -181,6 +178,7 @@ class ParcelsAPI(MethodView):
             # To operate atomic
             db.session.add(ownership_obj)
             db.session.add(metadata_obj)
+            db.session.add(filesystem_obj)
             db.session.commit()
             return jsonify({"error": e.msg}), 500
 

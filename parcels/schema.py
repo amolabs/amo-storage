@@ -7,7 +7,7 @@ schema = {
         },
         "metadata": {
             "type": "object",
-            "required": ["owner"]
+            "required": ["owner", "name", "path"]
         },
         "data": {
             "type": "string",
