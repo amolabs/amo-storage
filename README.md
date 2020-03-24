@@ -33,8 +33,8 @@ REDIS_HOST=redis
 REDIS_PORT=6379
 REDIS_DB=0
 
-; Service ID for data parcel
-SERVICE_ID=00000001
+; Storage ID for data parcel
+STORAGE_ID=00000001
 
 [AuthConfig]
 ISSUER=amo-storage

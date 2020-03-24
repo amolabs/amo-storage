@@ -1,10 +1,11 @@
 from flask import Flask
 from flask_cors import CORS
-from flask_sqlalchemy import SQLAlchemy
-from flask_redis import Redis
-from adapter.adapter import CephAdapter
 from flask_iniconfig import INIConfig
+from flask_redis import Redis
+from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy_utils.functions import database_exists
+
+from adapter.adapter import CephAdapter
 
 db = SQLAlchemy()
 redis = Redis()
@@ -13,6 +14,12 @@ ceph = CephAdapter()
 DEFAULT_CONFIG_FILENAME = "config.ini"
 DEFAULT_KEY_FILENAME = "key.json"
 DEFAULT_CONFIG_DIR = "config"
+
+INVALID_STORAGE_ID_ERROR = ValueError(
+    """Storage id must be 4 bytes unsigned integer
+    Check out https://github.com/amolabs/docs/blob/master/protocol.md#storage-id"""
+)
+
 
 def create_app(**config_overrides):
     app = Flask(__name__)
@@ -32,13 +39,20 @@ def create_app(**config_overrides):
     app.config.update(app.config.AmoStorageConfig)
     app.config.update(app.config.CephConfig)
 
+    try:
+        storage_id = hex(app.config['STORAGE_ID'])[2:].zfill(8)
+        if len(storage_id) > 8:
+            raise INVALID_STORAGE_ID_ERROR
+    except ValueError:
+        raise INVALID_STORAGE_ID_ERROR
+
+    app.config['STORAGE_ID'] = storage_id
+
     db.init_app(app)
     redis.init_app(app)
 
     if not database_exists(app.config["SQLALCHEMY_DATABASE_URI"]):
         with app.app_context():
-            from models.metadata import MetaData
-            from models.ownership import Ownership
             db.create_all()
 
     ceph.connect(

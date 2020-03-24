@@ -19,12 +19,12 @@ from models.ownership import Ownership
 
 
 class ParcelsAPI(MethodView):
-
     decorators = [auth_required]
 
     def __init__(self):
         if request.method not in ['GET', 'POST', 'DELETE', ]:
             abort(405)
+        self.storage_id = current_app.config['STORAGE_ID']
 
     def _end_point(cls, host, port):
         return "http://{0}:{1}".format(host, port)
@@ -125,7 +125,11 @@ class ParcelsAPI(MethodView):
         owner = parcels_json.get("owner")
         metadata = parcels_json.get("metadata")
         data = bytes.fromhex(parcels_json.get("data"))
-        parcel_id = SHA256.new(data).digest().hex().upper()
+        # https://github.com/amolabs/docs/blob/master/protocol.md#parcel-id
+        parcel_id = '{}{}'.format(
+            self.storage_id,
+            SHA256.new(data).digest().hex().upper()
+        )
 
         ownership_obj = Ownership(parcel_id=parcel_id, owner=owner)
         metadata_obj = MetaData(parcel_id=parcel_id, parcel_meta=metadata)
