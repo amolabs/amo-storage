@@ -26,7 +26,7 @@ DEBUG=0
 
 ; SQLite Configurations
 SQLALCHEMY_TRACK_MODIFICATIONS=0
-SQLALCHEMY_DATABASE_URI=sqlite:////tmp/amo_storage.db
+SQLALCHEMY_DATABASE_URI=mysql+pymysql://user:password@localhost:3306/amo-storage
 
 ; Redis Configurations
 REDIS_HOST=redis

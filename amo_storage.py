@@ -51,9 +51,10 @@ def create_app(**config_overrides):
     db.init_app(app)
     redis.init_app(app)
 
-    if not database_exists(app.config["SQLALCHEMY_DATABASE_URI"]):
-        with app.app_context():
-            db.create_all()
+    with app.app_context():
+        from models.metadata import MetaData
+        from models.ownership import Ownership
+        db.create_all()
 
     ceph.connect(
         host=app.config["HOST"],

@@ -141,7 +141,7 @@ class ParcelsAPI(MethodView):
             db.session.commit()
         except IntegrityError:
             return jsonify({"error": "Parcel ID %s already exists" % parcel_id}), 409
-        except:
+        except Exception as e:
             return jsonify({"error": "Error occurred on saving ownership and metadata"}), 500
 
         try:
