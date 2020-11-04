@@ -117,14 +117,21 @@ class ParcelsAPI(MethodView):
                 "data": data}), 200
 
     def post(self):
-        parcels_json = request.json
-        error = best_match(Draft7Validator(schema).iter_errors(parcels_json))
-        if error:
-            return jsonify({"error": error.message}), 400
+        # Read necessary data from request
+        owner = request.form.get("owner")
+        if not owner:
+            return jsonify({"error": "'owner' field is missing"}), 400
 
-        owner = parcels_json.get("owner")
-        metadata = parcels_json.get("metadata")
-        data = bytes.fromhex(parcels_json.get("data"))
+        m = request.form.get("metadata")
+        if not m:
+            return jsonify({"error": "'metadata' field is missing"}), 400
+        metadata = json.loads(m)
+
+        f = request.files.get("file")
+        if not f:
+            return jsonify({"error": "'file' field is missing"}), 400
+        data = f.read()
+
         # https://github.com/amolabs/docs/blob/master/protocol.md#parcel-id
         parcel_id = '{}{}'.format(
             self.storage_id,
