@@ -29,7 +29,7 @@ class ParcelsAPI(MethodView):
     def _end_point(cls, host, port):
         return "http://{0}:{1}".format(host, port)
 
-    def _usage_query(self, parcel_id: str, buyer: str):
+    def _usage_query(self, parcel_id: str, recipient: str):
         # AMO-Based-ACL
         request_headers = {
             'Content-Type': 'application/json'
@@ -40,7 +40,7 @@ class ParcelsAPI(MethodView):
             "method": "abci_query",
             "params": {
                 "path": "/usage",
-                "data": str.encode(json.dumps({"buyer": buyer, "target": parcel_id})).hex()
+                "data": str.encode(json.dumps({"recipient": recipient, "target": parcel_id})).hex()
             }
         })
 
