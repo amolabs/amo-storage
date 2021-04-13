@@ -10,4 +10,5 @@ pycryptodome==3.8.2
 requests==2.22.0
 flask-iniconfig==0.1.0
 sqlalchemy-utils==0.33.9
+sqlalchemy < 1.4.0
 pymysql==0.9.3
