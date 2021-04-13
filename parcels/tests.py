@@ -81,11 +81,13 @@ class ParcelsTest(unittest.TestCase):
             }
 
             remove_token = self.generate_token(self.owner.user_id, op_desc)
-            res = self.app.delete('/api/v1/parcels/%s' % self.parcel_id,
-                                  headers=auth_header(remove_token,
-                                                      self.owner.public_key.hex(),
-                                                      generate_signature_hex(remove_token, self.owner.key_obj)),
-                                  content_type='application/json')
+            res = self.app.delete(
+                '/api/v1/parcels/%s' % self.parcel_id,
+                headers=auth_header(
+                    remove_token,
+                    self.owner.public_key.hex(),
+                    generate_signature_hex(remove_token, self.owner.key_obj)),
+                content_type='application/json')
             assert res.status_code == 204
             self.is_uploaded = False
 

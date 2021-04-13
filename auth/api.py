@@ -26,9 +26,11 @@ class AuthAPI(MethodView):
         auth_json['iss'] = current_app.config.AuthConfig["ISSUER"]
         auth_json['jti'] = str(uuid.uuid4())
 
-        encoded_jwt = jwt.encode(payload=auth_json,
-                                 key=current_app.config.AuthConfig["SECRET"],
-                                 algorithm=current_app.config.AuthConfig["ALGORITHM"]).decode('utf-8')
+        encoded_jwt = jwt.encode(
+            payload=auth_json,
+            key=current_app.config.AuthConfig["SECRET"],
+            algorithm=current_app.config.AuthConfig["ALGORITHM"]
+        ).decode('utf-8')
         redis.set(auth_json.get('user') + ':' + str(pickle.dumps(auth_json.get('operation'))), encoded_jwt)
 
         return jsonify({'token': encoded_jwt}), 200
