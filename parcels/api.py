@@ -140,6 +140,16 @@ class ParcelsAPI(MethodView):
         local_id = has.digest().hex().upper()
         parcel_id = '{}{}'.format(self.storage_id, local_id)
 
+        # check if a parcel with the same parcel id is already stored
+        preOwner = Ownership.query.filter_by(parcel_id=parcel_id).first()
+        preMeta = MetaData.query.filter_by(parcel_id=parcel_id).first()
+        if preOwner is not None and preMeta is not None:
+            # NOTE: Since the parcel id was formed from the owner info and the
+            # metadata and body itself, this means exactly the same parcel is
+            # stored in the storage. So, instead of return '409 conflict',
+            # return the parcel id.
+            return jsonify({"id": parcel_id}), 200
+
         ownership_obj = Ownership(parcel_id=parcel_id, owner=owner)
         metadata_obj = MetaData(parcel_id=parcel_id, parcel_meta=metadata)
 
