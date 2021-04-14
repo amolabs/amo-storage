@@ -133,10 +133,12 @@ class ParcelsAPI(MethodView):
         data = f.read()
 
         # https://github.com/amolabs/docs/blob/master/protocol.md#parcel-id
-        parcel_id = '{}{}'.format(
-            self.storage_id,
-            SHA256.new(data).digest().hex().upper()
-        )
+        has = SHA256.new()
+        has.update(owner);
+        has.update(metadata);
+        has.update(data);
+        local_id = has.digest().hex().upper()
+        parcel_id = '{}{}'.format(self.storage_id, local_id)
 
         ownership_obj = Ownership(parcel_id=parcel_id, owner=owner)
         metadata_obj = MetaData(parcel_id=parcel_id, parcel_meta=metadata)
