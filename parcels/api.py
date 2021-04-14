@@ -134,9 +134,9 @@ class ParcelsAPI(MethodView):
 
         # https://github.com/amolabs/docs/blob/master/protocol.md#parcel-id
         has = SHA256.new()
-        has.update(owner);
-        has.update(metadata);
-        has.update(data);
+        has.update(owner)
+        has.update(metadata)
+        has.update(data)
         local_id = has.digest().hex().upper()
         parcel_id = '{}{}'.format(self.storage_id, local_id)
 
