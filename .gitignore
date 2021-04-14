@@ -52,3 +52,4 @@ sftp.json
 adapter_test.py
 *_configurations*
 tags
+.*.swp
