@@ -13,7 +13,7 @@ describe('hello module', () => {
   });
 
   it('get hello message', async () => {
-    expect(hello.getHelloMessage()).eql('Hello Message');
+    expect(hello.getHelloMessage()).eql('Hello.');
   });
 
 });
