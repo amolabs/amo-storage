@@ -1,0 +1,9 @@
+{
+  "name": "amo-storage",
+  "version": "2.0.0",
+  "description": "AMO storage server",
+  "main": "src/index.ts",
+  "repository": "git@github.com:amolabs/amo-storage.git",
+  "author": "AMO Labs",
+  "license": "MIT"
+}
