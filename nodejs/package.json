@@ -6,9 +6,17 @@
   "repository": "git@github.com:amolabs/amo-storage.git",
   "author": "AMO Labs",
   "license": "MIT",
+  "mocha": {
+    "spec": "src/**/*.test.ts",
+    "watch-files": [
+      "src/**/*.ts"
+    ],
+    "require": "ts-node/register"
+  },
   "scripts": {
     "build": "yarn tsc",
-    "start": "nodemon"
+    "start": "nodemon",
+    "test": "yarn mocha"
   },
   "devDependencies": {
     "@types/chai": "^4.2.17",
