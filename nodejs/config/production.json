@@ -1,0 +1,9 @@
+{
+  "amo-storage": {
+    "port": 8080,
+    "dotenv": {
+      "win_path": "",
+      "posix_path": ""
+    }
+  }
+}

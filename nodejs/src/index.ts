@@ -1,11 +1,31 @@
+import * as os from "os";
+
+const appName = 'amo-storage';
+
 import http from 'http';
 import express from 'express';
 import logger from 'morgan';
 import cors from 'cors';
-
+import _config from 'config'
 import router from './router';
+import dotenv from 'dotenv'
 
-const serverPort = 8080
+if (!process.env.NODE_ENV) {
+  process.env.NODE_ENV = "production"
+}
+
+const osType = os.type()
+const config: any = _config.get(appName)
+const serverPort = config.port
+const dotenvPath = process.env.dotenv_path ?
+    process.env.dotenv_path : (osType == 'Windows_NT' ? config.dotenv.win_path : config.dotenv.posix_path)
+
+dotenv.config({path: dotenvPath})
+
+if(serverPort === undefined) {
+  throw new Error(`${appName}.port is not given in config file`);
+}
+
 
 process.on('SIGINT', shutDown);
 process.on('SIGTERM', shutDown);
