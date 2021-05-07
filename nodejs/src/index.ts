@@ -7,7 +7,7 @@ import express from 'express';
 import logger from 'morgan';
 import cors from 'cors';
 import _config from 'config'
-import router from './router';
+import indexRouter from './router';
 import dotenv from 'dotenv'
 
 if (!process.env.NODE_ENV) {
@@ -38,7 +38,7 @@ app.use(express.text({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: false }));
 app.use(cors({origin: '*', optionsSuccessStatus: 200}));
 
-app.use('/', router)
+app.use('/', indexRouter)
 
 app.set('port', serverPort);
 
