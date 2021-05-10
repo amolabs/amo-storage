@@ -9,6 +9,9 @@ import cors from 'cors';
 import _config from 'config'
 import indexRouter from './router';
 import dotenv from 'dotenv'
+import db from './lib/db'
+
+db.init()
 
 if (!process.env.NODE_ENV) {
   process.env.NODE_ENV = "production"
@@ -31,6 +34,7 @@ process.on('SIGINT', shutDown);
 process.on('SIGTERM', shutDown);
 
 const app = express();
+
 app.use(logger('short'));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.raw({ limit: Infinity })); // TODO: fix max limit for raw data

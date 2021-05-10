@@ -4,6 +4,11 @@
     "dotenv": {
       "win_path": "D:\\pentasecurity\\project\\2021\\amo-storage\\nodejs\\.env",
       "posix_path": ""
+    },
+    "auth": {
+      "issuer": "amo-storage",
+      "algorithm": "HS256",
+      "secret": "your-secret"
     }
   }
 }
