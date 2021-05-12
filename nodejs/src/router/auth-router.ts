@@ -12,7 +12,6 @@ import {Auth} from '../types/auth-type'
 const router = express.Router();
 const config: any = _config.get(appName)
 
-
 router.post('/', function (req, res, next) {
         let authJson: Auth = req.body
         try {

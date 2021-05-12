@@ -9,6 +9,9 @@
       "issuer": "amo-storage",
       "algorithm": "HS256",
       "secret": "your-secret"
+    },
+    "storage": {
+      "storage_id": "00000001"
     }
   }
 }
