@@ -10,12 +10,7 @@ import _config from 'config'
 import indexRouter from './router';
 import dotenv from 'dotenv'
 import db from './lib/db'
-
-db.init()
-
-if (!process.env.NODE_ENV) {
-  process.env.NODE_ENV = "production"
-}
+import minio, {minioClient} from "./adapter/minio-adapter";
 
 const osType = os.type()
 const config: any = _config.get(appName)
@@ -24,6 +19,19 @@ const dotenvPath = process.env.dotenv_path ?
     process.env.dotenv_path : (osType == 'Windows_NT' ? config.dotenv.win_path : config.dotenv.posix_path)
 
 dotenv.config({path: dotenvPath})
+
+db.init()
+if (!minioClient) {
+  minio.connect(config.minio.end_point,
+      config.minio.port,
+      config.minio.use_ssl,
+      config.minio.access_key,
+      config.minio.secret_key);
+}
+
+if (!process.env.NODE_ENV) {
+  process.env.NODE_ENV = "production"
+}
 
 if(serverPort === undefined) {
   throw new Error(`${appName}.port is not given in config file`);

@@ -12,6 +12,14 @@
     },
     "storage": {
       "storage_id": "00000001"
+    },
+    "minio": {
+      "end_point": "127.0.0.1",
+      "port": 9000,
+      "use_ssl": false,
+      "access_key": "ACCESS_KEY",
+      "secret_key": "SECRET_KEY",
+      "bucket_name": "amo"
     }
   }
 }
