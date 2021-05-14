@@ -1,9 +1,12 @@
+import Stream from 'stream'
+
 const appName = 'amo-storage';
 
 import Minio, {Client} from 'minio'
 import {MinIoErrorCode} from './exception'
 import Buffer from 'multer'
 import _config from 'config'
+import {Readable as ReadableStream} from "stream";
 const config: any = _config.get(appName)
 export let minioClient: Client
 
@@ -80,18 +83,23 @@ function _existsBucket(bucketName: string = config.minio.bucket_name) {
 
 }
 
-function _existsObject(bucketName: string = config.minio.bucket_name, objectName: string) {
-    return _getObject(bucketName, objectName)
+async function _existsObject(bucketName: string = config.minio.bucket_name, objectName: string) {
+    return new Promise<void>((resolve, reject) => {
+        _getObject(bucketName, objectName)
+            .then(stream => {
+                if (stream) {
+                    reject(`Value for Key ${objectName} is already exist: ${MinIoErrorCode.ERR_ALREADY_EXIST}`)
+                }
+                resolve()
+            })
+    })
 }
 
 function _getObject(bucketName: string, objectName: string) {
-    return new Promise((resolve, reject) => {
+    return new Promise<Stream>((resolve, reject) => {
         return minioClient.getObject(bucketName, objectName, (error, dataStream) => {
             if (error) {
                 return reject(`getObject Error: ${error}: ${MinIoErrorCode.ERR_S3_INTERNAL}`)
-            }
-            if (dataStream) {
-                return reject(`Value for Key ${objectName} is already exist: ${MinIoErrorCode.ERR_ALREADY_EXIST}`)
             }
             return resolve(dataStream)
         } )

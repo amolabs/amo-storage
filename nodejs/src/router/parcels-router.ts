@@ -1,4 +1,4 @@
-import {on} from "cluster";
+import * as buffer from "buffer";
 
 const appName = 'amo-storage'
 
@@ -8,13 +8,15 @@ import jwt from 'jsonwebtoken'
 import _config from 'config'
 import crypto from 'crypto'
 import multer from 'multer'
-import {getOwnership, getMetadata, saveParcelInfo} from "../lib/files";
-
+import {getOwnership, getMetadata, saveParcelInfo, Ownership, Metadata, deleteParcelInfo} from "../lib/files";
+import minIo from '../adapter/minio-adapter'
+import axios from "axios";
+import { v4 } from 'uuid'
 const config: any = _config.get(appName)
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() })
 
-router.post('/', _verifyAuthRequired, _validateFormData, upload.single('file'), function (req, res, next) {
+router.post('/', _verifyAuthRequired, _validateFormData, upload.single('file'), async function (req, res, next) {
     let owner = req.body.owner
     let metadata = req.body.metadata
     let file = req.file
@@ -27,49 +29,102 @@ router.post('/', _verifyAuthRequired, _validateFormData, upload.single('file'), 
     let localId = hash.digest('hex').toUpperCase()
     let parcelId = `${config.storage.storage_id}${localId}`
 
-    // _existsParcelId(parcelId) TODO
     try {
-        saveParcelInfo(parcelId, owner, metadata)
-        res.send(JSON.stringify({ id: parcelId}));
+        if(_existsParcelId(parcelId)){
+            return res.json({"id": parcelId})
+        }
 
-        // TODO 스토리지에 파일 저장
+        await minIo.upload(parcelId, file.buffer, file.size)
+        saveParcelInfo(parcelId, owner, metadata)
+
+        res.json({"id": parcelId});
     } catch (error) {
-        res.status(error.code).send(JSON.stringify({"error": error.message}))
+        res.status(error.code).json({"error": error.message})
     }
 });
 
-router.get('/:parcel_id([a-zA-Z0-9]+)', function (req, res, next) {
-    res.send(JSON.stringify({
-        name: 'Get Specific parcel',
-    }));
+router.get('/:parcel_id([a-zA-Z0-9]+)', _verifyAuthRequired, async function (req, res, next) {
+    const parcelId = req.params.parcel_id
+    const key = req.query.key
+
+    try {
+        if (key == 'metadata') {
+            const metadata: Metadata = await getMetadata(parcelId)
+            res.json({"metadata": metadata.parcel_meta})
+        } else if (key == 'owner') {
+            const ownership: Ownership = await getOwnership(parcelId);
+            res.json({"owner": ownership.owner});
+        } else {
+            throw {
+                code: 400,
+                message: "Query key is invalid"
+            }
+        }
+    } catch (error) {
+        res.status(error.code).json({"error": error.message});
+    }
 });
 
-router.get('/download/:parcel_id([a-zA-Z0-9]+)', function (req, res, next) {
-    res.send(JSON.stringify({
-        name: 'Download Specific File by parcel id',
-    }));
+router.get('/download/:parcel_id([a-zA-Z0-9]+)', _verifyAuthRequired, async function (req: Request, res: Response, next: NextFunction) {
+    const parcelId = req.params.parcel_id
+    try {
+        const ownership: Ownership = await getOwnership(parcelId)
+        const metadata: Metadata = await getMetadata(parcelId)
+        if (req.user != ownership.owner) {
+            let res = await _usage_query(parcelId, req.user)
+
+            if (res.data.result.response.code != 0) {
+                throw {
+                    code: 403,
+                    message: `No permission to download data parcel ${parcelId}`
+                }
+            }
+
+
+            let stream: any = await minIo.download(config.minio.bucket_name, parcelId)
+
+            stream.pipe(res)
+            stream.on('finish', () => {
+                _deleteKey(req)
+            })
+        }
+    } catch (error) {
+        res.status(error.code).json({"error": error.message})
+    }
 });
 
-router.delete('/:parcel_id([a-zA-Z0-9]+)', function (req, res, next) {
-    res.send(JSON.stringify({
-        name: 'Delete Specific parcel by parcel id',
-    }));
+router.delete('/:parcel_id([a-zA-Z0-9]+)', _verifyAuthRequired, async function (req, res, next) {
+    const parcelId = req.params.parcel_id
+    try {
+        const ownership: Ownership = await getOwnership(parcelId)
+
+        if(!_existsParcelId(parcelId)){
+            throw {
+                code: 410,
+                message: "Parcel does not exist"
+            }
+        }
+
+        if (req.user != ownership.owner) {
+            throw {
+                code: 405,
+                message: "Not allowed to remove parcel"
+            }
+        }
+        await minIo.remove(config.minio.bucket_name, parcelId)
+        deleteParcelInfo(parcelId)
+
+        res.status(204).json({});
+    } catch (error) {
+        res.status(error.code).json({"error": error.message})
+    }
 });
 
 async function _existsParcelId(parcelId: string) {
-    // TODO 200을 리턴해야되는 이유를 물어봐야 됨.
-    const ownership = await getOwnership(parcelId)
-    const metadata = await getMetadata(parcelId)
-    try {
-        if (ownership && metadata) {
-            throw {
-                code: 400,
-                message: "'metadata' field is missing"
-            }
-        }
-    } catch(error) {
+    const ownership: Ownership = await getOwnership(parcelId)
+    const metadata: Metadata = await getMetadata(parcelId)
 
-    }
+    return ownership && metadata
 }
 
 function _validateFormData(req: Request, res: Response, next: NextFunction) {
@@ -100,19 +155,19 @@ function _validateFormData(req: Request, res: Response, next: NextFunction) {
         }
         next()
     } catch (error){
-        res.status(error.code).send(JSON.stringify({"error": error.message}));
+        res.status(error.code).send(JSON.stringify({"error": error.message}))
     }
-
-
 }
 
-function _verifyAuthRequired(req: Request, res: Response, next: NextFunction) {
+function  _verifyAuthRequired(req: Request, res: Response, next: NextFunction) {
     if (!req.query.key) {
         let token = req.header('X-Auth-Token')
         let encodedPublicKey = req.header('X-Public-Key')
         let encodedSignature = req.header('X-Signature')
         let key = _getKey(token)
         let payload = _getPayload(token)
+
+        // TODO req에 user가 포함되지 않는 원인 파악
         req.user = payload.user
 
         try {
@@ -127,6 +182,20 @@ function _verifyAuthRequired(req: Request, res: Response, next: NextFunction) {
         }
     } else {
         next()
+    }
+}
+
+function _deleteKey(req: Request) {
+    let token = req.header('X-Auth-Token')
+    let key = _getKey(token)
+
+    try {
+        redisClient.del(key)
+    } catch (error) {
+        throw {
+            code: 500,
+            message: "Delete key failed"
+        }
     }
 }
 
@@ -200,4 +269,33 @@ function _getKey(token = '') {
     let payload: any = jwt.verify(token, config.auth.secret)
     return `${payload.user}:${payload.operation.name}:${payload.operation.id}`
 }
+
+async function _usage_query(parcel_id: string, recipient: string | undefined) {
+    const endpoint = `http://${config.amo_blockchain_node.host}:${config.amo_blockchain_node.port}`
+    const requestHeaders = {
+        headers: {
+            "Content-Type": "application/json"
+        }
+    }
+    const requestBody = {
+        "jsonrpc": "2.0",
+        "id": v4(),
+        "method": "abci_query",
+        "params": {
+            "path": "/usage",
+            "data": Buffer.from(JSON.stringify({"recipient": recipient, "target": parcel_id}), 'utf-8').toString('hex')
+        }
+    }
+
+    try {
+        let res = await axios.post(endpoint, requestBody, requestHeaders)
+        return res;
+    } catch (error) {
+        throw {
+            code: 502,
+            message: `${error}`
+        }
+    }
+}
+
 export default router;

@@ -21,6 +21,8 @@ const dotenvPath = process.env.dotenv_path ?
 dotenv.config({path: dotenvPath})
 
 db.init()
+
+// TODO minio 설치 후 오류 발생 여부 확인
 if (!minioClient) {
   minio.connect(config.minio.end_point,
       config.minio.port,
