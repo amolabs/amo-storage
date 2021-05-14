@@ -3,12 +3,12 @@ import * as buffer from "buffer";
 const appName = 'amo-storage'
 
 import express, {NextFunction, Request, Response} from 'express';
-import {redisClient} from "../lib/redis";
+import {redisClient} from "../libs/redis";
 import jwt from 'jsonwebtoken'
 import _config from 'config'
 import crypto from 'crypto'
 import multer from 'multer'
-import {getOwnership, getMetadata, saveParcelInfo, Ownership, Metadata, deleteParcelInfo} from "../lib/files";
+import {getOwnership, getMetadata, saveParcelInfo, Ownership, Metadata, deleteParcelInfo} from "../libs/files";
 import minIo from '../adapter/minio-adapter'
 import axios from "axios";
 import { v4 } from 'uuid'

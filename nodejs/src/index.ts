@@ -9,7 +9,7 @@ import cors from 'cors';
 import _config from 'config'
 import indexRouter from './router';
 import dotenv from 'dotenv'
-import db from './lib/db'
+import db from './libs/db'
 import minio, {minioClient} from "./adapter/minio-adapter";
 
 const osType = os.type()

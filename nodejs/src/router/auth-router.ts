@@ -4,7 +4,7 @@ import express, {NextFunction, Request, Response} from 'express'
 import _config from 'config'
 import { v4 } from 'uuid'
 import jwt from 'jsonwebtoken'
-import {redisClient} from "../lib/redis";
+import {redisClient} from "../libs/redis";
 import {schema} from "../schema/auth-schema";
 import Ajv, {JSONSchemaType} from "ajv"
 import {Auth} from '../types/auth-type'
