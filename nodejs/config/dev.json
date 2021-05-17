@@ -1,29 +1,27 @@
 {
-  "amo-storage": {
-    "port": 8080,
-    "dotenv": {
-      "win_path": "D:\\pentasecurity\\project\\2021\\amo-storage\\nodejs\\.env",
-      "posix_path": ""
-    },
-    "auth": {
-      "issuer": "amo-storage",
-      "algorithm": "HS256",
-      "secret": "your-secret"
-    },
-    "storage": {
-      "storage_id": "00000001"
-    },
-    "minio": {
-      "end_point": "127.0.0.1",
-      "port": 9000,
-      "use_ssl": false,
-      "access_key": "ACCESS_KEY",
-      "secret_key": "SECRET_KEY",
-      "bucket_name": "amo"
-    },
-    "amo_blockchain_node": {
-      "host": "127.0.0.1",
-      "port": 26657
-    }
+  "port": 8080,
+  "dotenv": {
+    "win_path": "D:\\pentasecurity\\project\\2021\\amo-storage\\nodejs\\.env",
+    "posix_path": ""
+  },
+  "auth": {
+    "issuer": "amo-storage",
+    "algorithm": "HS256",
+    "secret": "your-secret"
+  },
+  "storage": {
+    "storage_id": "00000001"
+  },
+  "minio": {
+    "end_point": "127.0.0.1",
+    "port": 9000,
+    "use_ssl": false,
+    "access_key": "ACCESS_KEY",
+    "secret_key": "SECRET_KEY",
+    "bucket_name": "amo"
+  },
+  "amo_blockchain_node": {
+    "host": "127.0.0.1",
+    "port": 26657
   }
 }

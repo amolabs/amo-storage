@@ -21,26 +21,26 @@ const createOwnershipSql = `
 `
 
 function init(dbPath= DEFAULT_DB_PATH) {
-    return new Promise<void>(async (resolve, reject) => {
-        try {
-            if (db) {
-                console.log('closing previous db');
-                db.close();
-            }
+  return new Promise<void>(async (resolve, reject) => {
+    try {
+      if (db) {
+        console.log('closing previous db');
+        db.close();
+      }
 
-            db = new sqlite3.Database(dbPath);
-            console.log(`connected to files DB: ${dbPath}`);
+      db = new sqlite3.Database(dbPath);
+      console.log(`connected to files DB: ${dbPath}`);
 
-            await runPromise(db, createMetadataSql)
-            await runPromise(db, createOwnershipSql)
-        } catch (err) {
-            return reject(err);
-        }
-    })
+      await runPromise(db, createMetadataSql)
+      await runPromise(db, createOwnershipSql)
+    } catch (err) {
+      return reject(err);
+    }
+  })
 }
 
 
 
 export default {
-    init
+  init
 }
