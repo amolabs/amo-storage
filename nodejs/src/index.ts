@@ -1,44 +1,36 @@
 import * as os from "os";
-
-const appName = 'amo-storage';
-
 import http from 'http';
 import express from 'express';
 import logger from 'morgan';
 import cors from 'cors';
-import _config from 'config'
+import config from 'config'
 import indexRouter from './router';
 import dotenv from 'dotenv'
 import db from './libs/db'
-import minio, {minioClient} from "./adapter/minio-adapter";
+import s3Client, {client} from "./adapter/s3-adapter";
 
 const osType = os.type()
-const config: any = _config.get(appName)
-const serverPort = config.port
+const serverPort: number = config.get('port')
+const configDotenv: any = config.get('dotenv')
 const dotenvPath = process.env.dotenv_path ?
-    process.env.dotenv_path : (osType == 'Windows_NT' ? config.dotenv.win_path : config.dotenv.posix_path)
-
+    process.env.dotenv_path : (osType == 'Windows_NT' ? configDotenv.win_path : configDotenv.posix_path)
+const minio: any = config.get('minio')
 dotenv.config({path: dotenvPath})
 
 db.init()
 
 // TODO minio 설치 후 오류 발생 여부 확인
-if (!minioClient) {
-  minio.connect(config.minio.end_point,
-      config.minio.port,
-      config.minio.use_ssl,
-      config.minio.access_key,
-      config.minio.secret_key);
+if (!client) {
+  s3Client.connect(minio.end_point,
+      minio.port,
+      minio.use_ssl,
+      minio.access_key,
+      minio.secret_key);
 }
 
 if (!process.env.NODE_ENV) {
   process.env.NODE_ENV = "production"
 }
-
-if(serverPort === undefined) {
-  throw new Error(`${appName}.port is not given in config file`);
-}
-
 
 process.on('SIGINT', shutDown);
 process.on('SIGTERM', shutDown);

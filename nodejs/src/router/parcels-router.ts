@@ -2,20 +2,21 @@ import express, {NextFunction, Request, Response} from 'express'
 import redis from "../libs/redis"
 import config from 'config'
 import multer from 'multer'
-import minIo from '../adapter/minio-adapter'
+import s3Client from '../adapter/s3-adapter'
 import files from '../libs/files'
 import auth from '../libs/auth'
 import rpc from '../libs/rpc'
+import {validateFormData} from "../middleware/validate";
+import {verifyAuthRequired} from "../middleware/verify";
 
 const storage: any = config.get('storage')
 const minio: any = config.get('minio')
 const configAuth: any = config.get('auth')
 
-
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() })
 
-router.post('/', _verifyAuthRequired, _validateFormData, upload.single('file'), async function (req, res, next) {
+router.post('/', verifyAuthRequired, validateFormData, upload.single('file'), async function (req, res, next) {
     let owner: string = req.body.owner
     let metadata: string = JSON.stringify(req.body.metadata)
     let file = req.file
@@ -29,7 +30,9 @@ router.post('/', _verifyAuthRequired, _validateFormData, upload.single('file'), 
             return res.json({"id": parcelId})
         }
 
-        await minIo.upload(parcelId, file.buffer, file.size)
+        await s3Client.existsBucket()
+        await s3Client.existsObject('', parcelId)
+        await s3Client.upload(parcelId, file.buffer, file.size)
         files.saveParcelInfo(parcelId, owner, metadata)
 
         res.json({"id": parcelId});
@@ -38,7 +41,7 @@ router.post('/', _verifyAuthRequired, _validateFormData, upload.single('file'), 
     }
 });
 
-router.get('/:parcel_id([a-zA-Z0-9]+)', _verifyAuthRequired, async function (req, res, next) {
+router.get('/:parcel_id([a-zA-Z0-9]+)', verifyAuthRequired, async function (req, res, next) {
     const parcelId = req.params.parcel_id
     const key = req.query.key
 
@@ -60,7 +63,7 @@ router.get('/:parcel_id([a-zA-Z0-9]+)', _verifyAuthRequired, async function (req
     }
 });
 
-router.get('/download/:parcel_id([a-zA-Z0-9]+)', _verifyAuthRequired, async function (req: Request, res: Response, next: NextFunction) {
+router.get('/download/:parcel_id([a-zA-Z0-9]+)', verifyAuthRequired, async function (req: Request, res: Response, next: NextFunction) {
     const parcelId = req.params.parcel_id
     try {
         const ownership = await files.getOwnership(parcelId)
@@ -76,7 +79,9 @@ router.get('/download/:parcel_id([a-zA-Z0-9]+)', _verifyAuthRequired, async func
             }
 
 
-            let stream: any = await minIo.download(minio.bucket_name, parcelId)
+            await s3Client.existsBucket()
+            await s3Client.existsObject('', parcelId)
+            let stream: any = await s3Client.download(minio.bucket_name, parcelId)
 
             stream.pipe(res)
             stream.on('finish', () => {
@@ -90,7 +95,7 @@ router.get('/download/:parcel_id([a-zA-Z0-9]+)', _verifyAuthRequired, async func
     }
 });
 
-router.delete('/:parcel_id([a-zA-Z0-9]+)', _verifyAuthRequired, async function (req, res, next) {
+router.delete('/:parcel_id([a-zA-Z0-9]+)', verifyAuthRequired, async function (req, res, next) {
     const parcelId = req.params.parcel_id
     try {
         const ownership = await files.getOwnership(parcelId)
@@ -110,7 +115,9 @@ router.delete('/:parcel_id([a-zA-Z0-9]+)', _verifyAuthRequired, async function (
                 message: "Not allowed to remove parcel"
             }
         }
-        await minIo.remove(minio.bucket_name, parcelId)
+
+        await s3Client.existsBucket()
+        await s3Client.remove(minio.bucket_name, parcelId)
         files.deleteParcelInfo(parcelId)
 
         res.status(204).json({});
@@ -118,62 +125,5 @@ router.delete('/:parcel_id([a-zA-Z0-9]+)', _verifyAuthRequired, async function (
         res.status(error.code).json({"error": error.message})
     }
 });
-
-function _validateFormData(req: Request, res: Response, next: NextFunction) {
-    let owner = req.body.owner
-    let metadata = req.body.metadata
-    let file = req.file
-
-    try {
-        if (!owner) {
-            throw {
-                code: 400,
-                message: "'owner' field is missing"
-            }
-        }
-
-        if (Object.keys(metadata).length === 0) {
-            throw {
-                code: 400,
-                message: "'metadata' field is missing"
-            }
-        }
-
-        if (Object.keys(file).length === 0) {
-            throw {
-                code: 400,
-                message: "'file' field is missing"
-            }
-        }
-        next()
-    } catch (error){
-        res.status(error.code).send(JSON.stringify({"error": error.message}))
-    }
-}
-
-function  _verifyAuthRequired(req: Request, res: Response, next: NextFunction) {
-    if (!req.query.key) {
-        let token = req.header('X-Auth-Token')
-        let encodedPublicKey = req.header('X-Public-Key')
-        let encodedSignature = req.header('X-Signature')
-        let payload = auth.getPayload(token, configAuth.secret)
-
-        // TODO req에 user가 포함되지 않는 원인 파악
-        req.user = payload.user
-
-        try {
-            auth.verifyHeaderField(token, encodedPublicKey, encodedSignature)
-            auth.verifyPayload(token, configAuth.secret)
-            auth.existsToken(token, configAuth.secret)
-            auth.verifyToken(req.method, token, configAuth.secret)
-            auth.verifySignature(encodedPublicKey, encodedSignature)
-            next()
-        }catch(error){
-            res.status(error.code).send(JSON.stringify({"error": error.message}))
-        }
-    } else {
-        next()
-    }
-}
 
 export default router;
