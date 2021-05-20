@@ -20,7 +20,7 @@ router.post('/', function (req, res, next) {
     const token = jwt.createToken(authJson, auth.secret, {algorithm: auth.algorithm})
 
     redis.save(`${authJson.user}:${authJson.operation.name}:${authJson.operation.id}`, token)
-
+    console.log(" # token: ", token)
     res.status(200).send(JSON.stringify({"token": token}))
   } catch (error) {
     res.status(400).send(JSON.stringify({'error': error}))

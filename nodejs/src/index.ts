@@ -17,15 +17,22 @@ const dotenvPath = process.env.dotenv_path ?
 const minio: any = config.get('minio')
 dotenv.config({path: dotenvPath})
 
-db.init()
+const dbConn = db.init()
+db.createTable(dbConn)
 
-// TODO minio 설치 후 오류 발생 여부 확인
 if (!client) {
   s3Client.connect(minio.end_point,
       minio.port,
       minio.use_ssl,
       minio.access_key,
       minio.secret_key);
+  s3Client
+    .existsBucket(minio.bucket_name, true)
+    .then(exists => {
+      if (!exists) {
+        s3Client.createBucket(minio.bucket_name)
+      }
+    })
 }
 
 if (!process.env.NODE_ENV) {
@@ -36,7 +43,6 @@ process.on('SIGINT', shutDown);
 process.on('SIGTERM', shutDown);
 
 const app = express();
-
 app.use(logger('short'));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.raw({ limit: Infinity })); // TODO: fix max limit for raw data

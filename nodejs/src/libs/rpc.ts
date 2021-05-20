@@ -23,12 +23,12 @@ async function usageQuery(parcel_id: string, recipient: string | undefined) {
 
   try {
     let res = await axios.post(endpoint, requestBody, requestHeaders)
-    return res;
+    return Promise.resolve(res)
   } catch (error) {
-    throw {
+    Promise.reject( {
       code: 502,
       message: `${error}`
-    }
+    })
   }
 }
 

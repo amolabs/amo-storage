@@ -1,8 +1,8 @@
 import {Database} from "sqlite3";
 
-async function runPromise(db: Database, query: string, params?: any): Promise<number> {
+async function runPromise(connection: Database, query: string, params?: any): Promise<number> {
  return new Promise(function(resolve, reject) {
-	db.run(query, params, function (err) {
+	 connection.run(query, params, function (err) {
 	 if (err) {
 		return reject(err.message);
 	 }
@@ -11,9 +11,9 @@ async function runPromise(db: Database, query: string, params?: any): Promise<nu
  });
 }
 
-async function getPromise(db: Database, query: string, params?: any): Promise<any> {
+async function getPromise(connection: Database, query: string, params?: any): Promise<any> {
  return new Promise(function(resolve, reject) {
-	db.get(query, params, (err, row) => {
+	 connection.get(query, params, (err, row) => {
 	 if (err) {
 		return reject(err.message);
 	 }

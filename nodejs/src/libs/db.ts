@@ -2,9 +2,9 @@ import path from 'path'
 import _sqlite3 from 'sqlite3';
 import {runPromise} from '../libs/utils'
 const sqlite3 = _sqlite3.verbose()
-
-let db: _sqlite3.Database
 const DEFAULT_DB_PATH = path.join(__dirname,'../data', 'amo_storage.db' )
+let db: _sqlite3.Database
+
 
 const createMetadataSql = `
   CREATE TABLE IF NOT EXISTS metadata (
@@ -21,26 +21,37 @@ const createOwnershipSql = `
 `
 
 function init(dbPath= DEFAULT_DB_PATH) {
-  return new Promise<void>(async (resolve, reject) => {
-    try {
-      if (db) {
-        console.log('closing previous db');
-        db.close();
-      }
-
-      db = new sqlite3.Database(dbPath);
-      console.log(`connected to files DB: ${dbPath}`);
-
-      await runPromise(db, createMetadataSql)
-      await runPromise(db, createOwnershipSql)
-    } catch (err) {
-      return reject(err);
+  try {
+    if (db) {
+      console.log('closing previous db');
+      db.close();
     }
-  })
+
+    db = new sqlite3.Database(dbPath);
+    console.log(`connected to files DB: ${dbPath}`);
+
+
+    return db
+  } catch (error) {
+    throw error
+  }
+}
+async function createTable(db: _sqlite3.Database){
+  try {
+    await runPromise(db, createMetadataSql)
+    await runPromise(db, createOwnershipSql)
+    return Promise.resolve()
+  } catch (error) {
+    Promise.reject(error)
+  }
 }
 
-
+function getConnection() {
+  return db
+}
 
 export default {
-  init
+  init,
+  getConnection,
+  createTable
 }
