@@ -1,4 +1,4 @@
-import {Client} from 'minio'
+import {BucketItemStat, Client} from 'minio'
 import {MinIoErrorCode} from './exception'
 import config from 'config'
 
@@ -24,10 +24,10 @@ async function createBucket(bucketName: string, region: string = 'Seoul') {
   return client.makeBucket(bucketName, region)
 }
 
-async function upload(parcelId: string, buffer: Buffer, size: number) {
+async function upload(parcelId: string, buffer: Buffer, size: number, metadata: object) {
   await existsBucket(configMinio.bucket_name)
-  await existsObject(configMinio.bucket_name, parcelId)
-  return client.putObject(configMinio.bucket_name, parcelId, buffer, size)
+  await alreadyExistsObject(configMinio.bucket_name, parcelId)
+  return client.putObject(configMinio.bucket_name, parcelId, buffer, size, metadata)
 }
 
 async function download(bucketName:string = configMinio.bucket_name, parcelId: string) {
@@ -39,17 +39,55 @@ async function remove(bucketName:string = configMinio.bucket_name, parcelId: str
 }
 
 async function existsBucket(bucketName: string, result?: boolean) {
-  const exists = await client.bucketExists(bucketName)
-  if (result) {
-    return exists
-  } else {
-    if (exists) {
-      return exists
+  try {
+    const exists = await client.bucketExists(bucketName)
+    if (result) {
+      return Promise.resolve(exists)
     } else {
-      throw {
-        code: 601,
-        message: `Bucket is None: ${MinIoErrorCode.ERR_NONE_BUCKET}`
+      if (exists) {
+        return Promise.resolve(exists)
+      } else {
+        return Promise.reject({
+          code: 601,
+          message: `Bucket is None: ${MinIoErrorCode.ERR_NONE_BUCKET}`
+        })
       }
+    }
+  } catch(error) {
+    return Promise.reject(error)
+  }
+}
+
+async function getObjectMetadata(bucketName: string, objectName: string) {
+  try {
+    const itemStat: BucketItemStat = await client.statObject(bucketName, objectName)
+    return Promise.resolve(itemStat.metaData)
+  } catch (error) {
+    if (error.code == 'NotFound') {
+      return Promise.reject({
+        code: MinIoErrorCode.ERR_NOT_FOUND,
+        message: `Metadata for Key ${objectName} is Not Found`
+      })
+    }
+    return Promise.reject(error)
+  }
+}
+
+async function alreadyExistsObject(bucketName: string, objectName: string) {
+  try {
+    const stream = await client.getObject(bucketName, objectName)
+
+    if (stream) {
+      return Promise.reject({
+        code: MinIoErrorCode.ERR_ALREADY_EXIST,
+        message: `Value for Key ${objectName} is already exist}`
+      })
+    }
+  } catch (error) {
+    if (error.code == 'NoSuchKey') {
+      return Promise.resolve();
+    } else {
+      return Promise.reject(error)
     }
   }
 }
@@ -59,16 +97,13 @@ async function existsObject(bucketName: string, objectName: string) {
     const stream = await client.getObject(bucketName, objectName)
 
     if (stream) {
-      Promise.reject({
-        code: 606,
-        message: `Value for Key ${objectName} is already exist: ${MinIoErrorCode.ERR_ALREADY_EXIST}`
-      })
+      return Promise.resolve(true)
     }
   } catch (error) {
     if (error.code == 'NoSuchKey') {
-      return Promise.resolve();
+      return Promise.resolve(false);
     } else {
-      Promise.reject(error)
+      return Promise.reject(error)
     }
   }
 
@@ -81,5 +116,7 @@ export default {
   download,
   remove,
   existsBucket,
+  alreadyExistsObject,
+  getObjectMetadata,
   existsObject
 }

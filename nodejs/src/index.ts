@@ -17,8 +17,9 @@ const dotenvPath = process.env.dotenv_path ?
 const minio: any = config.get('minio')
 dotenv.config({path: dotenvPath})
 
-const dbConn = db.init()
-db.createTable(dbConn)
+// DB가 필요할 경우 사용
+// const dbConn = db.init()
+// db.createTable(dbConn)
 
 if (!client) {
   s3Client.connect(minio.end_point,

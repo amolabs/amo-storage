@@ -1,6 +1,6 @@
 import path from 'path'
 import _sqlite3 from 'sqlite3';
-import {runPromise} from '../libs/utils'
+import utils from '../libs/utils'
 const sqlite3 = _sqlite3.verbose()
 const DEFAULT_DB_PATH = path.join(__dirname,'../data', 'amo_storage.db' )
 let db: _sqlite3.Database
@@ -38,8 +38,8 @@ function init(dbPath= DEFAULT_DB_PATH) {
 }
 async function createTable(db: _sqlite3.Database){
   try {
-    await runPromise(db, createMetadataSql)
-    await runPromise(db, createOwnershipSql)
+    await utils.runPromise(db, createMetadataSql)
+    await utils.runPromise(db, createOwnershipSql)
     return Promise.resolve()
   } catch (error) {
     Promise.reject(error)

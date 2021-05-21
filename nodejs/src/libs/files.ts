@@ -1,5 +1,4 @@
-import {getPromise, runPromise} from "./utils";
-import _sqlite3 from 'sqlite3';
+import utils from "./utils";
 import crypto from 'crypto'
 import db from '../libs/db'
 
@@ -17,7 +16,7 @@ async function getOwnership(parcelId: string, result?: boolean): Promise<Ownersh
   try{
     const query = `SELECT * FROM ownership WHERE parcel_id = ?`
     const params = [parcelId]
-    const row = await getPromise(db.getConnection(), query, params)
+    const row = await utils.getPromise(db.getConnection(), query, params)
     if (result) {
       return Promise.resolve(row)
     }
@@ -38,7 +37,7 @@ async function getMetadata(parcelId: string, result?: boolean) {
   try{
     const query = `SELECT * FROM metadata WHERE parcel_id = ?`
     const params = [parcelId]
-    const row = await getPromise(db.getConnection(), query, params)
+    const row = await utils.getPromise(db.getConnection(), query, params)
     if (result) {
       return Promise.resolve(row)
     }
@@ -91,7 +90,7 @@ async function saveOwnership(parcelId: string, owner: string) {
     const connection = db.getConnection()
     const query = `INSERT INTO ownership (parcel_id,owner) VALUES (?,?)`
     const params = [parcelId, owner]
-    await runPromise(connection, query, params)
+    await utils.runPromise(connection, query, params)
     return Promise.resolve()
   } catch (error) {
     return Promise.reject(error)
@@ -114,7 +113,7 @@ async function saveMetadata(parcelId: string, metadata: string) {
     const connection = db.getConnection()
     const query = `INSERT INTO metadata (parcel_id,parcel_meta) VALUES (?,?)`
     const params = [parcelId, metadata]
-    await runPromise(connection, query, params)
+    await utils.runPromise(connection, query, params)
   } catch (error) {
     throw error
   }
@@ -126,7 +125,7 @@ async function deleteMetadata(parcelId: string) {
     try {
       const query = `DELETE FROM metadata WHERE parcel_id=?`
       const params = [parcelId]
-      await runPromise(connection, query, params)
+      await utils.runPromise(connection, query, params)
       return resolve()
     } catch (error) {
       reject(error)
@@ -140,7 +139,7 @@ async function deleteOwnership(parcelId: string) {
     try {
       const query = `DELETE FROM ownership WHERE parcel_id=?`
       const params = [parcelId]
-      await runPromise(connection, query, params)
+      await utils.runPromise(connection, query, params)
       return resolve()
     } catch (error) {
       reject(error)
@@ -148,14 +147,6 @@ async function deleteOwnership(parcelId: string) {
   })
 }
 
-function createParcelId(owner: string, metadata: string, buffer: Buffer) {
-  let hash = crypto.createHash('sha256')
-  hash.update(owner)
-  hash.update(metadata)
-  hash.update(buffer)
-
-  return hash.digest('hex').toUpperCase()
-}
 
 export default {
   getOwnership,
@@ -166,6 +157,5 @@ export default {
   deleteMetadata,
   deleteOwnership,
   deleteParcelInfo,
-  createParcelId,
   existsParcelId
 }
