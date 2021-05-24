@@ -89,7 +89,7 @@ router.get('/download/:parcel_id([a-zA-Z0-9]+)', /*verifyAuthRequired, TODO */ a
         stream.on('finish', () => {
             console.log("# finish")
             let token = req.header('X-Auth-Token')
-            let key = auth.getKey(token, configAuth.secret)
+            let key = auth.getTokenKey(token, configAuth.secret)
             redis.remove(key)
         })
     } catch (error) {
@@ -100,7 +100,7 @@ router.get('/download/:parcel_id([a-zA-Z0-9]+)', /*verifyAuthRequired, TODO */ a
 router.delete('/:parcel_id([a-zA-Z0-9]+)', /*verifyAuthRequired, TODO */  async function (req, res, next) {
     const parcelId = req.params.parcel_id
     let token = req.header('X-Auth-Token')
-    let key = auth.getKey(token, configAuth.secret)
+    let key = auth.getTokenKey(token, configAuth.secret)
 
     try {
         const metadata: any = await s3Client.getObjectMetadata(minio.bucket_name, parcelId)

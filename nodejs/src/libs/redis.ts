@@ -1,6 +1,7 @@
 import redis from 'redis'
 
-export const redisClient = redis.createClient()
+//export const redisClient = redis.createClient()
+export var redisClient: redis.RedisClient
 
 function save(key: string, value: string) {
   try {
