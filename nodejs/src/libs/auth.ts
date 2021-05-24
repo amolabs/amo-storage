@@ -1,15 +1,14 @@
 import {Auth} from "../types/auth-type"
-import {ec} from 'elliptic'
 import jwt from "jsonwebtoken"
 import redis from "./redis"
-import crypto from "crypto"
+import { ec as EC } from 'elliptic'
 
 function createToken(auth: Auth, secret: string, options?: object): string {
   return jwt.sign(auth, secret, options)
 }
 
 function existsToken(token: string = '', secret: string) {
-  let key = getKey(token, secret)
+  let key = getTokenKey(token, secret)
   if (!redis.get(key)) {
     throw {
       code: 401,
@@ -54,19 +53,21 @@ function verifyPayload(token = '', secret: string) {
   }
 }
 
-function verifySignature(messages: string, encodedPublicKey = '', encodedSignature = '') {
-  let signature = Buffer.from(encodedSignature, 'hex')
-  const sigObj = {r: signature.slice(0, 32), s: signature.slice(32, 64)}
-
-
-  // if (!verifier.verify(encodedPublicKey, encodedSignature)) {
-  //   throw {
-  //     code: 401,
-  //     message: "Verification failed"
-  //   }
-  // }
+function verifySignature(msgHex: string = '', pubkeyHex = '', sigHex = '') {
+  const ecKey = new EC('p256').keyFromPublic(pubkeyHex, 'hex')
+  const sigBuf = Buffer.from(sigHex, 'hex')
+  const sig = { r: sigBuf.slice(0, 32), s: sigBuf.slice(32,64) }
+  const result = ecKey.verify(msgHex, sig)
+  if (!ecKey.verify(msgHex, sig)) {
+    throw {
+      code: 401,
+      message: "Verification failed"
+    }
+  }
+  return
 }
-function getKey(token: string = '', secret: string) {
+
+function getTokenKey(token: string = '', secret: string) {
   let payload: any = jwt.verify(token, secret)
   return `${payload.user}:${payload.operation.name}:${payload.operation.id}`
 }
@@ -86,6 +87,6 @@ export default {
   verifyToken,
   verifyPayload,
   verifySignature,
-  getKey,
+  getTokenKey,
   getPayload
 }
