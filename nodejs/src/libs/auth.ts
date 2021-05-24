@@ -1,6 +1,7 @@
 import {Auth} from "../types/auth-type";
 import jwt from "jsonwebtoken";
 import redis from "./redis";
+import { createHash } from 'crypto';
 import { ec as EC } from 'elliptic';
 
 function createToken(auth: Auth, secret: string, options?: object): string {
@@ -54,10 +55,13 @@ function verifyPayload(token = '', secret: string) {
 }
 
 function verifySignature(msgHex: string, pubkeyHex = '', sigHex = '') {
+  const hash = createHash('sha256')
+  const msg = Buffer.from(msgHex, 'hex')
+  const digestHex = hash.update(msg).digest('hex')
   const ecKey = new EC('p256').keyFromPublic(pubkeyHex, 'hex')
   const sigBuf = Buffer.from(sigHex, 'hex')
   const sig = { r: sigBuf.slice(0, 32), s: sigBuf.slice(32,64) }
-  return ecKey.verify(msgHex, sig)
+  return ecKey.verify(digestHex, sig)
 }
 
 function getTokenKey(token: string = '', secret: string) {
