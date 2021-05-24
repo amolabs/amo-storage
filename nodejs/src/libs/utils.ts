@@ -2,6 +2,7 @@ import {Database} from "sqlite3";
 import {Response} from "express";
 import {MinIoErrorCode} from '../adapter/exception'
 import crypto from "crypto";
+import Stream from "node:stream";
 
 async function runPromise(connection: Database, query: string, params?: any): Promise<number> {
  return new Promise(function(resolve, reject) {
@@ -59,9 +60,21 @@ function createParcelId(owner: string, metadata: string, buffer: Buffer) {
 	return hash.digest('hex').toUpperCase()
 }
 
+async function streamToString(stream: Stream) {
+	const chunks: any[] = [];
+	return new Promise<string>((resolve, reject) => {
+		stream.on('data', chunk => chunks.push(Buffer.from(chunk, 'utf8')));
+		stream.on('error', error => reject(error));
+		stream.on('end', () => {
+			console.log("# finish")
+			resolve(Buffer.concat(chunks).toString('hex'))
+		})
+	})
+}
 export default {
  runPromise,
  getPromise,
  decorateErrorResponse,
- createParcelId
+ createParcelId,
+ streamToString
 }

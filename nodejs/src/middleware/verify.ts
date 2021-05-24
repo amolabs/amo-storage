@@ -17,7 +17,7 @@ export function  verifyAuthRequired(req: Request, res: Response, next: NextFunct
       auth.verifyPayload(token, configAuth.secret)
       auth.existsToken(token, configAuth.secret)
       auth.verifyToken(req.method, token, configAuth.secret)
-      // auth.verifySignature(encodedPublicKey, encodedSignature) // TODO error:0909006C:PEM routines:get_name:no start line 해결 필요
+      auth.verifySignature(token, encodedPublicKey, encodedSignature) // TODO error:0909006C:PEM routines:get_name:no start line 해결 필요
       next()
     }catch(error){
       res.status(error.code).send(JSON.stringify({"error": error.message}))

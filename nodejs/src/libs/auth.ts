@@ -1,7 +1,8 @@
-import {Auth} from "../types/auth-type";
-import jwt from "jsonwebtoken";
-import redis from "./redis";
-import crypto from "crypto";
+import {Auth} from "../types/auth-type"
+import {ec} from 'elliptic'
+import jwt from "jsonwebtoken"
+import redis from "./redis"
+import crypto from "crypto"
 
 function createToken(auth: Auth, secret: string, options?: object): string {
   return jwt.sign(auth, secret, options)
@@ -31,7 +32,7 @@ function verifyToken(method: string, token = '', secret: string){
     ["GET", "download"],
     ["POST", "upload"],
     ["DELETE", "remove"]
-  ]);
+  ])
   let payload = getPayload(token, secret)
 
   if (methodOperation.get(method.toUpperCase()) != payload.operation.name) {
@@ -53,14 +54,17 @@ function verifyPayload(token = '', secret: string) {
   }
 }
 
-function verifySignature(encodedPublicKey = '', encodedSignature = '') {
-  const verifier = crypto.createVerify('SHA256')
-  if (!verifier.verify(encodedPublicKey, encodedSignature)) {
-    throw {
-      code: 401,
-      message: "Verification failed"
-    }
-  }
+function verifySignature(messages: string, encodedPublicKey = '', encodedSignature = '') {
+  let signature = Buffer.from(encodedSignature, 'hex')
+  const sigObj = {r: signature.slice(0, 32), s: signature.slice(32, 64)}
+
+
+  // if (!verifier.verify(encodedPublicKey, encodedSignature)) {
+  //   throw {
+  //     code: 401,
+  //     message: "Verification failed"
+  //   }
+  // }
 }
 function getKey(token: string = '', secret: string) {
   let payload: any = jwt.verify(token, secret)

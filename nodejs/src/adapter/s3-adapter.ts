@@ -80,7 +80,7 @@ async function alreadyExistsObject(bucketName: string, objectName: string) {
     if (stream) {
       return Promise.reject({
         code: MinIoErrorCode.ERR_ALREADY_EXIST,
-        message: `Value for Key ${objectName} is already exist}`
+        message: `Value for Key ${objectName} is already exist`
       })
     }
   } catch (error) {
@@ -92,21 +92,25 @@ async function alreadyExistsObject(bucketName: string, objectName: string) {
   }
 }
 
-async function existsObject(bucketName: string, objectName: string) {
+async function existsObject(bucketName: string, objectName: string, result?: boolean) {
   try {
     const stream = await client.getObject(bucketName, objectName)
 
-    if (stream) {
-      return Promise.resolve(true)
-    }
+    return Promise.resolve(true)
   } catch (error) {
     if (error.code == 'NoSuchKey') {
-      return Promise.resolve(false);
+      if (result) {
+        return Promise.resolve(false)
+      } else {
+        return Promise.reject({
+          code: MinIoErrorCode.ERR_NOT_FOUND,
+          message: `Value for Key ${objectName} is Not Found`
+        })
+      }
     } else {
       return Promise.reject(error)
     }
   }
-
 }
 
 export default {

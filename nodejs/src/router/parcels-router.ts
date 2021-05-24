@@ -9,6 +9,7 @@ import rpc from '../libs/rpc'
 import {validateFormData} from "../middleware/validate";
 import {verifyAuthRequired} from "../middleware/verify";
 import utils from '../libs/utils'
+import Stream from "node:stream";
 
 const storage: any = config.get('storage')
 const minio: any = config.get('minio')
@@ -28,7 +29,7 @@ router.post('/', verifyAuthRequired, upload.single('file'), async function (req,
         let localId = utils.createParcelId(owner, metadata, file.buffer)
         let parcelId = `${storage.storage_id}${localId}`
 
-        const existsMetadata = await s3Client.existsObject(minio.bucket_name, parcelId)
+        const existsMetadata = await s3Client.existsObject(minio.bucket_name, parcelId, true)
         if(existsMetadata){
             return res.json({"id": parcelId})
         }
@@ -81,17 +82,17 @@ router.get('/download/:parcel_id([a-zA-Z0-9]+)', /*verifyAuthRequired, TODO */ a
             }
         }
         await s3Client.existsBucket(minio.bucket_name)
-        await s3Client.alreadyExistsObject(minio.bucket_name, parcelId)
-        let stream: any = await s3Client.download(minio.bucket_name, parcelId)
+        await s3Client.existsObject(minio.bucket_name, parcelId)
+        let stream: Stream = await s3Client.download(minio.bucket_name, parcelId)
+        const data: string = await utils.streamToString(stream)
 
-        // TODO connector에서 다운로드가 끝난 후, key가 삭제 되는지 확인 필요
-        stream.pipe(res)
-        stream.on('finish', () => {
-            console.log("# finish")
-            let token = req.header('X-Auth-Token')
-            let key = auth.getKey(token, configAuth.secret)
-            redis.remove(key)
-        })
+        _deleteKey(req)
+
+        res.json({
+            "id": parcelId,
+            "owner": metadata.owner,
+            "metadata": metadata,
+            "data": data})
     } catch (error) {
         utils.decorateErrorResponse(res, error).json({"error": error.message})
     }
@@ -120,4 +121,9 @@ router.delete('/:parcel_id([a-zA-Z0-9]+)', /*verifyAuthRequired, TODO */  async 
     }
 });
 
+function _deleteKey(req: Request) {
+    let token = req.header('X-Auth-Token')
+    let key = auth.getKey(token, configAuth.secret)
+    redis.remove(key)
+}
 export default router;
