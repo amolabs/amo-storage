@@ -1,6 +1,7 @@
 import {Auth} from "../types/auth-type"
 import jwt from "jsonwebtoken"
 import redis from "./redis"
+import { createHash } from 'crypto'
 import { ec as EC } from 'elliptic'
 
 function createToken(auth: Auth, secret: string, options?: object): string {
@@ -9,21 +10,11 @@ function createToken(auth: Auth, secret: string, options?: object): string {
 
 function existsToken(token: string = '', secret: string) {
   let key = getTokenKey(token, secret)
-  if (!redis.get(key)) {
-    throw {
-      code: 401,
-      message: "Token does not exist"
-    }
-  }
+  return redis.get(key)
 }
 
 function verifyHeaderField(token = '', encodedPublicKey = '', encodedSignature = '') {
-  if (!token || !encodedPublicKey || !encodedSignature) {
-    throw {
-      code: 401,
-      message: "One or more required fields do not exist in the header"
-    }
-  }
+  return token && encodedPublicKey && encodedSignature
 }
 
 function verifyToken(method: string, token = '', secret: string){
@@ -34,38 +25,22 @@ function verifyToken(method: string, token = '', secret: string){
   ])
   let payload = getPayload(token, secret)
 
-  if (methodOperation.get(method.toUpperCase()) != payload.operation.name) {
-    throw {
-      code: 401,
-      message: `Token is only available to perform ${payload.operation.name}`
-    }
-
-  }
+  return methodOperation.get(method.toUpperCase()) == payload.operation.name
 }
 
 function verifyPayload(token = '', secret: string) {
-  let payload = getPayload(token, secret)
-  if (!payload) {
-    throw {
-      code: 401,
-      message: "Invalid token"
-    }
-  }
+  return getPayload(token, secret)
 }
 
-function verifySignature(msgHex: string = '', pubkeyHex = '', sigHex = '') {
+function verifySignature(msg: string = '', pubkeyHex = '', sigHex = '') {
+  const msgHash = createHash('sha256').update(msg).digest('hex');
   const ecKey = new EC('p256').keyFromPublic(pubkeyHex, 'hex')
   const sigBuf = Buffer.from(sigHex, 'hex')
   const sig = { r: sigBuf.slice(0, 32), s: sigBuf.slice(32,64) }
-  const result = ecKey.verify(msgHex, sig)
-  if (!ecKey.verify(msgHex, sig)) {
-    throw {
-      code: 401,
-      message: "Verification failed"
-    }
-  }
-  return
+
+  return ecKey.verify(msgHash, sig)
 }
+
 
 function getTokenKey(token: string = '', secret: string) {
   let payload: any = jwt.verify(token, secret)
@@ -73,7 +48,7 @@ function getTokenKey(token: string = '', secret: string) {
 }
 
 function getPayload(token = '', secret: string) {
-  let payload: any = jwt.verify(token, secret)
+  const payload: any = jwt.verify(token, secret)
   if (!payload.user || !payload.operation)
     return null
 

@@ -5,7 +5,7 @@ interface Operation {
 }
 
 export interface Auth {
-  user: number
+  user: string
   operation: Operation
   iss?: string
   jti?: string
