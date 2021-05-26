@@ -85,7 +85,7 @@ async function alreadyExistsObject(bucketName: string, objectName: string) {
     }
   } catch (error) {
     if (error.code == 'NoSuchKey') {
-      return Promise.resolve();
+      return Promise.resolve()
     } else {
       return Promise.reject(error)
     }

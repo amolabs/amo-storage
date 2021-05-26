@@ -1,4 +1,4 @@
-import {Request} from "express";
+import {Request} from "express"
 
 export function validateFormData(req: Request) {
   let owner = req.body.owner

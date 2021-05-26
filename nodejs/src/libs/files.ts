@@ -1,4 +1,4 @@
-import utils from "./utils";
+import utils from "./utils"
 import crypto from 'crypto'
 import db from '../libs/db'
 
@@ -29,7 +29,7 @@ async function getOwnership(parcelId: string, result?: boolean): Promise<Ownersh
       }
     }
   }catch (error) {
-    return Promise.reject(error);
+    return Promise.reject(error)
   }
 }
 

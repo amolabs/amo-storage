@@ -1,5 +1,5 @@
-import Ajv from "ajv";
-import {schema} from "../schema/auth-schema";
+import Ajv from "ajv"
+import {schema} from "../schema/auth-schema"
 
 function validateJsonSchema<T>(auth: T) {
   const ajv = new Ajv()

@@ -1,5 +1,5 @@
 function getHelloMessage(): string {
-  return 'Hello.';
+  return 'Hello.'
 }
 
 export default {

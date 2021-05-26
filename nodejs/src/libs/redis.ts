@@ -32,7 +32,7 @@ function get(key: string) {
         message: "Delete key failed"
       }
     }
-    return value;
+    return value
   })
 }
 export default {

@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken"
 import redis from "./redis"
 import { createHash } from 'crypto'
 import { ec as EC } from 'elliptic'
+import {stringUtils, objectUtils} from '../libs/utils'
 
 function createToken(auth: Auth, secret: string, options?: object): string {
   return jwt.sign(auth, secret, options)
@@ -13,8 +14,8 @@ function existsToken(token: string = '', secret: string) {
   return redis.get(key)
 }
 
-function verifyHeaderField(token = '', encodedPublicKey = '', encodedSignature = '') {
-  return token && encodedPublicKey && encodedSignature
+function verifyHeaderField(token = '', encodedPublicKey = '', encodedSignature = ''): boolean {
+  return stringUtils.isNotEmpty(token) && stringUtils.isNotEmpty(encodedPublicKey) && stringUtils.isNotEmpty(encodedSignature)
 }
 
 function verifyToken(method: string, token = '', secret: string){
@@ -29,7 +30,7 @@ function verifyToken(method: string, token = '', secret: string){
 }
 
 function verifyPayload(token = '', secret: string) {
-  return getPayload(token, secret)
+  return !objectUtils.isEmpty(getPayload(token, secret))
 }
 
 function verifySignature(msg: string = '', pubkeyHex = '', sigHex = '') {
@@ -44,7 +45,7 @@ function verifySignature(msg: string = '', pubkeyHex = '', sigHex = '') {
 
 function getTokenKey(token: string = '', secret: string) {
   let payload: any = jwt.verify(token, secret)
-  return `${payload.user}:${payload.operation.name}:${payload.operation.id}`
+  return `${payload.user}:${payload.operation.name}:${payload.operation.hash}`
 }
 
 function getPayload(token = '', secret: string) {

@@ -1,7 +1,7 @@
-import {NextFunction, Request, Response} from "express";
-import auth from "../libs/auth";
-import config from "config";
-import utils from "../libs/utils";
+import {NextFunction, Request, Response} from "express"
+import auth from "../libs/auth"
+import config from "config"
+import utils from "../libs/utils"
 const configAuth: any = config.get('auth')
 
 export function  verifyAuthRequired(req: Request, res: Response, next: NextFunction) {

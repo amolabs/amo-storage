@@ -1,8 +1,8 @@
-import express from 'express';
+import express from 'express'
 import parcelsRouter from './parcels-router'
 import authRouter from './auth-router'
 
-const router = express.Router();
+const router = express.Router()
 
 const baseUrl = '/api/v1'
 

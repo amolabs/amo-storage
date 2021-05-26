@@ -1,5 +1,5 @@
 import path from 'path'
-import _sqlite3 from 'sqlite3';
+import _sqlite3 from 'sqlite3'
 import utils from '../libs/utils'
 const sqlite3 = _sqlite3.verbose()
 const DEFAULT_DB_PATH = path.join(__dirname,'../data', 'amo_storage.db' )
@@ -24,7 +24,7 @@ function init(dbPath= DEFAULT_DB_PATH) {
   try {
     if (db) {
       console.log('closing previous db');
-      db.close();
+      db.close()
     }
 
     db = new sqlite3.Database(dbPath);

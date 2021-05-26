@@ -1,6 +1,6 @@
-import {v4} from "uuid";
-import axios from "axios";
-import config from "config";
+import {v4} from "uuid"
+import axios from "axios"
+import config from "config"
 
 const amoBlockchainNode: any = config.get('amo_blockchain_node')
 

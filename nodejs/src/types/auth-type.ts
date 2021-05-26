@@ -1,6 +1,5 @@
 interface Operation {
   name: string
-  id?: string
   hash?: string
 }
 

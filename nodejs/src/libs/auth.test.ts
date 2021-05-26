@@ -1,12 +1,15 @@
-import chai from 'chai';
-const expect = chai.expect;
+import chai from 'chai'
+import sinon from 'sinon'
+const expect = chai.expect
 
 //import { createHash } from 'crypto';
 //import { ec as EC } from 'elliptic';
 
-import auth from './auth';
-import jwt from "jsonwebtoken";
-import {Auth} from "../types/auth-type";
+import auth from './auth'
+import jwt from "jsonwebtoken"
+import {Auth} from "../types/auth-type"
+import redis from "../libs/redis"
+
 
 describe('auth test', () => {
   /* remove this block after some stabilization
@@ -31,7 +34,6 @@ describe('auth test', () => {
         user: "kevin",
         operation: {
           "name": "upload",
-          "id": "parcel_id",
           "hash": "aA12f"
         }
       }
@@ -42,39 +44,54 @@ describe('auth test', () => {
 
       const payload: any = jwt.verify(token, secret)
 
-      expect(authInfo.user).equal(payload.user)
-      expect(authInfo.operation.name).equal(payload.operation.name)
-      expect(authInfo.operation.id).equal(payload.operation.id)
+      expect(payload.user).equal(authInfo.user)
+      expect(payload.operation.name).equal(authInfo.operation.name)
+      expect(payload.operation.hash).equal(authInfo.operation.hash)
     })
   })
 
   describe('exist token', () => {
     it('should exist token', () => {
-      // TODO redis 는 sinon mock으로 대체
+      const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiMUU2QzE1MjhFNEMwNEY1Qzg3OUJFMzBGNUE2MjEyMUNFMzQzMzA4QiIsIm9wZXJhdGlvbiI6eyJuYW1lIjoidXBsb2FkIiwiaGFzaCI6IjI1ZmMwZTcwOTZmYzY1MzcxODIwMmRjMzBiMGM1ODBiOGFiODdlYWMxMWE3MDBjYmEwM2E3YzAyMWJjMzViMGMifSwiaXNzIjoiYW1vLXN0b3JhZ2UiLCJqdGkiOiIwZDIzMmYwNS1lNDFkLTRjOTQtOTE2Yy1hMzUyY2VmODRjZjIiLCJpYXQiOjE2MjE5Mjg5NDl9.QXsw0KZ8wp1pvSiNDRydz3h7iMJ1kZ_ws65aYdnp6Qs'
+      const secret = 'amo-storage'
+      sinon
+        .stub(redis, 'get')
+        .withArgs(auth.getTokenKey(token, secret))
+        .callsFake((key: string) => {
+          return true
+        })
+
+      expect(auth.existsToken(token, secret)).equal(true)
+
     })
   })
 
   describe('verify header field', () => {
     it('should verify header field', () => {
-      // TODO
+      const token = 'token'
+      const encodedPublicKey = 'publicKey'
+      const encodedSignature = 'signature'
+
+      expect(auth.verifyHeaderField(token, encodedPublicKey, encodedSignature)).equal(true)
     })
   })
 
   describe('verify token', () => {
     it('should verify token', () => {
-      // TODO
+      const method = 'post'
+      const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiMUU2QzE1MjhFNEMwNEY1Qzg3OUJFMzBGNUE2MjEyMUNFMzQzMzA4QiIsIm9wZXJhdGlvbiI6eyJuYW1lIjoidXBsb2FkIiwiaGFzaCI6IjI1ZmMwZTcwOTZmYzY1MzcxODIwMmRjMzBiMGM1ODBiOGFiODdlYWMxMWE3MDBjYmEwM2E3YzAyMWJjMzViMGMifSwiaXNzIjoiYW1vLXN0b3JhZ2UiLCJqdGkiOiIwZDIzMmYwNS1lNDFkLTRjOTQtOTE2Yy1hMzUyY2VmODRjZjIiLCJpYXQiOjE2MjE5Mjg5NDl9.QXsw0KZ8wp1pvSiNDRydz3h7iMJ1kZ_ws65aYdnp6Qs'
+      const secret = 'amo-storage'
+
+      expect(auth.verifyToken(method, token, secret)).equal(true)
     })
   })
 
   describe('verify payload', () => {
     it('should verify payload', () => {
-      // TODO
-    })
-  })
+      const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiMUU2QzE1MjhFNEMwNEY1Qzg3OUJFMzBGNUE2MjEyMUNFMzQzMzA4QiIsIm9wZXJhdGlvbiI6eyJuYW1lIjoidXBsb2FkIiwiaGFzaCI6IjI1ZmMwZTcwOTZmYzY1MzcxODIwMmRjMzBiMGM1ODBiOGFiODdlYWMxMWE3MDBjYmEwM2E3YzAyMWJjMzViMGMifSwiaXNzIjoiYW1vLXN0b3JhZ2UiLCJqdGkiOiIwZDIzMmYwNS1lNDFkLTRjOTQtOTE2Yy1hMzUyY2VmODRjZjIiLCJpYXQiOjE2MjE5Mjg5NDl9.QXsw0KZ8wp1pvSiNDRydz3h7iMJ1kZ_ws65aYdnp6Qs'
+      const secret = 'amo-storage'
 
-  describe('verify payload', () => {
-    it('should verify payload', () => {
-      // TODO
+      expect(auth.verifyPayload(token, secret)).equal(true)
     })
   })
 
@@ -90,27 +107,24 @@ describe('auth test', () => {
     })
   })
 
-  // describe('verify signature', () => {
-  //   it('should verify signature', () => {
-  //     // sample message
-  //     const msgHex = Buffer.from('this is a test message}').toString('hex');
-  //     // sample public key (EC point with uncompressed form)
-  //     const pubkeyHex = '0455de42a65310e16fb11986093fe1714b706f0e79f399da2d9952016ad638e178f97f79f6b0d46d61faec01bf0ceb11bf42b77ca5d9fa1f074600da6a8660d118';
-  //     // sample signature (concatenated r and s with hex form)
-  //     const sigHex = '7d52d9accb923a3b1a1a760f56b530e30bfb1fcd8fa5b6463ece3031787b9f5ca58892dcde021ae575c4a55ac061f73299a1f0dd336e19da1bb1dbf90cc0429c';
-  //     expect(auth.verifySignature(msgHex, pubkeyHex, sigHex)).equal(true);
-  //   })
-  // })
-
   describe('get token key', () => {
     it('should get token key', () => {
-      // TODO
+      const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiMUU2QzE1MjhFNEMwNEY1Qzg3OUJFMzBGNUE2MjEyMUNFMzQzMzA4QiIsIm9wZXJhdGlvbiI6eyJuYW1lIjoidXBsb2FkIiwiaGFzaCI6IjI1ZmMwZTcwOTZmYzY1MzcxODIwMmRjMzBiMGM1ODBiOGFiODdlYWMxMWE3MDBjYmEwM2E3YzAyMWJjMzViMGMifSwiaXNzIjoiYW1vLXN0b3JhZ2UiLCJqdGkiOiIwZDIzMmYwNS1lNDFkLTRjOTQtOTE2Yy1hMzUyY2VmODRjZjIiLCJpYXQiOjE2MjE5Mjg5NDl9.QXsw0KZ8wp1pvSiNDRydz3h7iMJ1kZ_ws65aYdnp6Qs'
+      const secret = 'amo-storage'
+      const expectVal = `1E6C1528E4C04F5C879BE30F5A62121CE343308B:upload:25fc0e7096fc653718202dc30b0c580b8ab87eac11a700cba03a7c021bc35b0c`
+      expect(auth.getTokenKey(token, secret)).equal(expectVal)
     })
   })
 
   describe('get payload', () => {
     it('should get payload', () => {
-      // TODO
+      const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiMUU2QzE1MjhFNEMwNEY1Qzg3OUJFMzBGNUE2MjEyMUNFMzQzMzA4QiIsIm9wZXJhdGlvbiI6eyJuYW1lIjoidXBsb2FkIiwiaGFzaCI6IjI1ZmMwZTcwOTZmYzY1MzcxODIwMmRjMzBiMGM1ODBiOGFiODdlYWMxMWE3MDBjYmEwM2E3YzAyMWJjMzViMGMifSwiaXNzIjoiYW1vLXN0b3JhZ2UiLCJqdGkiOiIwZDIzMmYwNS1lNDFkLTRjOTQtOTE2Yy1hMzUyY2VmODRjZjIiLCJpYXQiOjE2MjE5Mjg5NDl9.QXsw0KZ8wp1pvSiNDRydz3h7iMJ1kZ_ws65aYdnp6Qs'
+      const secret = 'amo-storage'
+      const payload = auth.getPayload(token, secret)
+
+      expect(payload.user).equal('1E6C1528E4C04F5C879BE30F5A62121CE343308B')
+      expect(payload.operation.name).equal('upload')
+      expect(payload.operation.hash).equal('25fc0e7096fc653718202dc30b0c580b8ab87eac11a700cba03a7c021bc35b0c')
     })
   })
 })
