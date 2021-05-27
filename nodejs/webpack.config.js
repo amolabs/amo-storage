@@ -22,24 +22,15 @@ module.exports = (env, options) => {
 
   return {
     mode: isProductionMode,
+    target: 'node',
+    // externals: [nodeExternals()],
     devtool,
     entry: './src/index',
     output: {
       path: path.resolve(__dirname, 'build'),
-      filename: '[name].js',
+      filename: '[name].bundle.js',
       sourceMapFilename: '[file].map',
       publicPath: '/',
-    },
-    optimization: {
-      splitChunks: {
-        cacheGroups: {
-          commons: {
-            test: /[\\/]node_modules[\\/]/,
-            name: 'vendors',
-            chunks: 'all'
-          }
-        }
-      }
     },
     devServer: {
       hot: true,
@@ -64,10 +55,15 @@ module.exports = (env, options) => {
     },
     optimization: {
       splitChunks: {
-        chunks: 'all',
-      },
+        cacheGroups: {
+          commons: {
+            test: /[\\/]node_modules[\\/]/,
+            name: 'vendors',
+            chunks: 'all'
+          }
+        }
+      }
     },
-    externals: [nodeExternals()],
     plugins,
   };
 };
