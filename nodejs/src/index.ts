@@ -44,7 +44,13 @@ process.on('SIGINT', shutDown)
 process.on('SIGTERM', shutDown)
 
 const app = express()
-app.use(logger('short'))
+
+if (process.env.NODE_ENV === 'production') {
+  app.use(logger('combined'))
+} else {
+  app.use(logger('dev'))
+}
+
 app.use(express.json({ limit: '10mb' }))
 app.use(express.raw({ limit: Infinity })) // TODO: fix max limit for raw data
 app.use(express.text({ limit: '10mb' }))
@@ -107,6 +113,7 @@ function onClose() {
 function shutDown(sig: any) {
   console.log(`\nA signal ${sig} received. Closing server.`)
   if (server.listening) {
+    console.log('Closed server')
     server.close()
   }
 }

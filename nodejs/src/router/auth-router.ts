@@ -5,6 +5,7 @@ import jwt from '../libs/auth'
 import redis from "../libs/redis"
 import {Auth} from '../types/auth-type'
 import jsonValidator from '../libs/json-schema-validator'
+import utils from "../libs/utils"
 
 const router = express.Router()
 const auth: any = config.get('auth')
@@ -21,9 +22,9 @@ router.post('/', function (req, res, next) {
 
     redis.save(`${authJson.user}:${authJson.operation.name}:${authJson.operation.hash}`, token)
 
-    res.status(200).send(JSON.stringify({"token": token}))
+    res.status(200).json({"token": token})
   } catch (error) {
-    res.status(400).send(JSON.stringify({'error': error}))
+    utils.decorateErrorResponse(res, error).json({"error": error.message})
   }
 })
 

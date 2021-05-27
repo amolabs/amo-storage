@@ -14,7 +14,7 @@
   },
   "minio": {
     "end_point": "TODO",
-    "port": 9000,
+    "port": 3333,
     "use_ssl": false,
     "access_key": "TODO",
     "secret_key": "TODO",
