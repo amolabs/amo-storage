@@ -10,13 +10,15 @@ import db from './libs/db'
 import s3Client, {client} from "./adapter/s3-adapter"
 
 const osType = os.type()
+const serverIp: number = config.get('ip')
 const serverPort: number = config.get('port')
 const configDotenv: any = config.get('dotenv')
 const dotenvPath = process.env.dotenv_path ?
     process.env.dotenv_path : (osType == 'Windows_NT' ? configDotenv.win_path : configDotenv.posix_path)
 const minio: any = config.get('minio')
 dotenv.config({path: dotenvPath})
-
+const accessKey: any = process.env.accessKey
+const secretKey: any = process.env.secretKey
 // DB가 필요할 경우 사용
 // const dbConn = db.init()
 // db.createTable(dbConn)
@@ -25,8 +27,8 @@ if (!client) {
   s3Client.connect(minio.end_point,
       minio.port,
       minio.use_ssl,
-      minio.access_key,
-      minio.secret_key);
+      accessKey,
+      secretKey);
   s3Client
     .existsBucket(minio.bucket_name, true)
     .then(exists => {
@@ -62,7 +64,7 @@ app.use('/', indexRouter)
 app.set('port', serverPort)
 
 const server = http.createServer(app)
-server.listen(serverPort, '127.0.0.1')
+server.listen(serverPort, serverIp)
 server.on('listening', onListening)
 server.on('close', onClose)
 server.on('error', onError)
@@ -98,12 +100,10 @@ function onError(error: any) {
  */
 
 function onListening() {
-  var addr = server.address()
-  var bind = typeof addr === 'string'
-  ? 'pipe ' + addr
-  : 'port ' + addr?.port
+  let addr: any = server.address()
+
   // TODO: proper logging
-  console.log(`Listening on ${bind}`)
+  console.log(`Listening on ${addr.address}:${addr.port}`)
 }
 
 function onClose() {

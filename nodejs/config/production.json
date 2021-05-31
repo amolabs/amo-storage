@@ -1,8 +1,9 @@
 {
+  "ip": "192.168.101.169",
   "port": "TODO",
   "dotenv": {
     "win_path": "D:\\pentasecurity\\project\\2021\\amo-storage\\nodejs\\.env",
-    "posix_path": "TODO"
+    "posix_path": "production"
   },
   "auth": {
     "issuer": "amo-storage",
@@ -23,5 +24,9 @@
   "amo_blockchain_node": {
     "host": "172.105.213.114",
     "port": 26657
+  },
+  "redis": {
+    "host": "127.0.0.1",
+    "port": 6378
   }
 }

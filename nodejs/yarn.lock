@@ -1181,6 +1181,11 @@ concat-stream@^1.5.2:
     readable-stream "^2.2.2"
     typedarray "^0.0.6"
 
+config-webpack@^1.0.5:
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/config-webpack/-/config-webpack-1.0.5.tgz#bccb13ab87ca9d1ab300b128fc0092f1294b39a8"
+  integrity sha512-ytSIkCQSUPARZh3SpKYLAhE0+2+i2+Gz9t9K/jooGzbVQeDGAZzAAphPpqyvXAcrXHndu5nUnY0ZduK07TvXmA==
+
 config@^3.3.6:
   version "3.3.6"
   resolved "https://registry.yarnpkg.com/config/-/config-3.3.6.tgz#b87799db7399cc34988f55379b5f43465b1b065c"
@@ -2784,6 +2789,11 @@ json-buffer@3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/json-buffer/-/json-buffer-3.0.0.tgz#5b1f397afc75d677bde8bcfc0e47e1f9a3d9a898"
   integrity sha1-Wx85evx11ne96Lz8Dkfh+aPZqJg=
+
+json-loader@^0.5.7:
+  version "0.5.7"
+  resolved "https://registry.yarnpkg.com/json-loader/-/json-loader-0.5.7.tgz#dca14a70235ff82f0ac9a3abeb60d337a365185d"
+  integrity sha512-QLPs8Dj7lnf3e3QYS1zkCo+4ZwqOiF9d/nZnYozTISxXWCfNs9yuky5rJw4/W34s7POaNlbZmQGaB5NiXCbP4w==
 
 json-parse-better-errors@^1.0.2:
   version "1.0.2"

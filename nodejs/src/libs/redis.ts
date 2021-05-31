@@ -1,6 +1,10 @@
 import redis from 'redis'
+import config from 'config'
 
-export const redisClient = redis.createClient()
+const configRedis: any = config.get('redis')
+const host = configRedis.get('host')
+const port = configRedis.get('port')
+export const redisClient = redis.createClient(port, host)
 
 function save(key: string, value: string) {
   try {

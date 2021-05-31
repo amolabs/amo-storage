@@ -1,8 +1,9 @@
 {
+  "ip": "127.0.0.1",
   "port": 8080,
   "dotenv": {
-    "win_path": "D:\\pentasecurity\\project\\2021\\amo-storage\\nodejs\\.env",
-    "posix_path": "TODO"
+    "win_path": "D:\\amo-storage\\config\\.env",
+    "posix_path": "/amo-storage/config/.env"
   },
   "auth": {
     "issuer": "amo-storage",
@@ -16,12 +17,14 @@
     "end_point": "127.0.0.1",
     "port": 9000,
     "use_ssl": false,
-    "access_key": "minioadmin",
-    "secret_key": "minioadmin",
     "bucket_name": "amo"
   },
   "amo_blockchain_node": {
     "host": "172.105.213.114",
     "port": 26657
+  },
+  "redis": {
+    "host": "127.0.0.1",
+    "port": 6379
   }
 }

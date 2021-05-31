@@ -9,6 +9,7 @@ require('dotenv').config();
 module.exports = (env, options) => {
   let isProductionMode = (env && env.production) || options.mode === 'production' || process.env.production === 'true' || false;
   let devtool;
+
   const plugins = [new MiniCssExtractPlugin({ filename: 'app.css' })];
 
   if (isProductionMode) {
@@ -25,10 +26,12 @@ module.exports = (env, options) => {
     target: 'node',
     // externals: [nodeExternals()],
     devtool,
-    entry: './src/index',
+    entry: {
+      "amo-storage": './src/index'
+    },
     output: {
       path: path.resolve(__dirname, 'build'),
-      filename: '[name].bundle.js',
+      filename: '[name].js',
       sourceMapFilename: '[file].map',
       publicPath: '/',
     },
