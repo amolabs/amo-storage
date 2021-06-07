@@ -1,6 +1,5 @@
 import {Auth} from "../types/auth-type"
 import jwt from "jsonwebtoken"
-import redis from "./redis"
 import { createHash } from 'crypto'
 import { ec as EC } from 'elliptic'
 import {stringUtils, objectUtils} from '../libs/utils'
@@ -9,13 +8,8 @@ function createToken(auth: Auth, secret: string, options?: object): string {
   return jwt.sign(auth, secret, options)
 }
 
-function existsToken(token: string = '', secret: string) {
-  let key = getTokenKey(token, secret)
-  return redis.get(key)
-}
-
-function verifyHeaderField(token = '', encodedPublicKey = '', encodedSignature = ''): boolean {
-  return stringUtils.isNotEmpty(token) && stringUtils.isNotEmpty(encodedPublicKey) && stringUtils.isNotEmpty(encodedSignature)
+async function verifyHeaderField(token = '', encodedPublicKey = '', encodedSignature = '') {
+  return Promise.resolve(stringUtils.isNotEmpty(token) && stringUtils.isNotEmpty(encodedPublicKey) && stringUtils.isNotEmpty(encodedSignature))
 }
 
 function verifyToken(method: string, token = '', secret: string){
@@ -45,7 +39,7 @@ function verifySignature(msg: string = '', pubkeyHex = '', sigHex = '') {
 
 function getTokenKey(token: string = '', secret: string) {
   let payload: any = jwt.verify(token, secret)
-  return `${payload.user}:${payload.operation.name}:${payload.operation.hash}`
+  return `${payload.user}:${payload.operation.name}`
 }
 
 function getPayload(token = '', secret: string) {
@@ -58,7 +52,6 @@ function getPayload(token = '', secret: string) {
 
 export default {
   createToken,
-  existsToken,
   verifyHeaderField,
   verifyToken,
   verifyPayload,

@@ -50,29 +50,13 @@ describe('auth test', () => {
     })
   })
 
-  describe('exist token', () => {
-    it('should exist token', () => {
-      const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiMUU2QzE1MjhFNEMwNEY1Qzg3OUJFMzBGNUE2MjEyMUNFMzQzMzA4QiIsIm9wZXJhdGlvbiI6eyJuYW1lIjoidXBsb2FkIiwiaGFzaCI6IjI1ZmMwZTcwOTZmYzY1MzcxODIwMmRjMzBiMGM1ODBiOGFiODdlYWMxMWE3MDBjYmEwM2E3YzAyMWJjMzViMGMifSwiaXNzIjoiYW1vLXN0b3JhZ2UiLCJqdGkiOiIwZDIzMmYwNS1lNDFkLTRjOTQtOTE2Yy1hMzUyY2VmODRjZjIiLCJpYXQiOjE2MjE5Mjg5NDl9.QXsw0KZ8wp1pvSiNDRydz3h7iMJ1kZ_ws65aYdnp6Qs'
-      const secret = 'amo-storage'
-      sinon
-        .stub(redis, 'get')
-        .withArgs(auth.getTokenKey(token, secret))
-        .callsFake((key: string) => {
-          return true
-        })
-
-      expect(auth.existsToken(token, secret)).equal(true)
-
-    })
-  })
-
   describe('verify header field', () => {
-    it('should verify header field', () => {
+    it('should verify header field', async () => {
       const token = 'token'
       const encodedPublicKey = 'publicKey'
       const encodedSignature = 'signature'
-
-      expect(auth.verifyHeaderField(token, encodedPublicKey, encodedSignature)).equal(true)
+      const result = await auth.verifyHeaderField(token, encodedPublicKey, encodedSignature)
+      expect(result).equal(true)
     })
   })
 
@@ -111,7 +95,7 @@ describe('auth test', () => {
     it('should get token key', () => {
       const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiMUU2QzE1MjhFNEMwNEY1Qzg3OUJFMzBGNUE2MjEyMUNFMzQzMzA4QiIsIm9wZXJhdGlvbiI6eyJuYW1lIjoidXBsb2FkIiwiaGFzaCI6IjI1ZmMwZTcwOTZmYzY1MzcxODIwMmRjMzBiMGM1ODBiOGFiODdlYWMxMWE3MDBjYmEwM2E3YzAyMWJjMzViMGMifSwiaXNzIjoiYW1vLXN0b3JhZ2UiLCJqdGkiOiIwZDIzMmYwNS1lNDFkLTRjOTQtOTE2Yy1hMzUyY2VmODRjZjIiLCJpYXQiOjE2MjE5Mjg5NDl9.QXsw0KZ8wp1pvSiNDRydz3h7iMJ1kZ_ws65aYdnp6Qs'
       const secret = 'amo-storage'
-      const expectVal = `1E6C1528E4C04F5C879BE30F5A62121CE343308B:upload:25fc0e7096fc653718202dc30b0c580b8ab87eac11a700cba03a7c021bc35b0c`
+      const expectVal = `1E6C1528E4C04F5C879BE30F5A62121CE343308B:upload`
       expect(auth.getTokenKey(token, secret)).equal(expectVal)
     })
   })

@@ -4,28 +4,6 @@ import {MinIoErrorCode} from '../adapter/exception'
 import crypto from "crypto"
 import Stream from "node:stream"
 
-async function runPromise(connection: Database, query: string, params?: any): Promise<number> {
- return new Promise(function(resolve, reject) {
-	 connection.run(query, params, function (err) {
-	 if (err) {
-		return reject(err.message)
-	 }
-	 return resolve(this.lastID)
-	})
- })
-}
-
-async function getPromise(connection: Database, query: string, params?: any): Promise<any> {
- return new Promise(function(resolve, reject) {
-	 connection.get(query, params, (err, row) => {
-	 if (err) {
-		return reject(err.message)
-	 }
-	 return resolve(row)
-	})
- })
-}
-
 function decorateErrorResponse(res: Response, error: any) {
 	let code
 
@@ -50,6 +28,17 @@ function decorateErrorResponse(res: Response, error: any) {
 	return res
 }
 
+function makeErrorMessage(error: any) {
+	let messages = []
+	if (Array.isArray(error)) {
+		for (let obj of error) {
+			messages.push(obj.message)
+		}
+		return messages
+	} else {
+		return error.message
+	}
+}
 
 function createParcelId(owner: string, metadata: string, buffer: Buffer) {
 	let hash = crypto.createHash('sha256')
@@ -87,9 +76,8 @@ export const objectUtils = {
 	}
 }
 export default {
- runPromise,
- getPromise,
  decorateErrorResponse,
  createParcelId,
- streamToString
+ streamToString,
+ makeErrorMessage
 }

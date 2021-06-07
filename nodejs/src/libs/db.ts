@@ -1,5 +1,5 @@
 import path from 'path'
-import _sqlite3 from 'sqlite3'
+import _sqlite3, {Database} from 'sqlite3'
 import utils from '../libs/utils'
 const sqlite3 = _sqlite3.verbose()
 const DEFAULT_DB_PATH = path.join(__dirname,'../data', 'amo_storage.db' )
@@ -38,8 +38,8 @@ function init(dbPath= DEFAULT_DB_PATH) {
 }
 async function createTable(db: _sqlite3.Database){
   try {
-    await utils.runPromise(db, createMetadataSql)
-    await utils.runPromise(db, createOwnershipSql)
+    await runPromise(db, createMetadataSql)
+    await runPromise(db, createOwnershipSql)
     return Promise.resolve()
   } catch (error) {
     Promise.reject(error)
@@ -50,8 +50,32 @@ function getConnection() {
   return db
 }
 
+async function runPromise(connection: Database, query: string, params?: any): Promise<number> {
+  return new Promise(function(resolve, reject) {
+    connection.run(query, params, function (err) {
+      if (err) {
+        return reject(err.message)
+      }
+      return resolve(this.lastID)
+    })
+  })
+}
+
+async function getPromise(connection: Database, query: string, params?: any): Promise<any> {
+  return new Promise(function(resolve, reject) {
+    connection.get(query, params, (err, row) => {
+      if (err) {
+        return reject(err.message)
+      }
+      return resolve(row)
+    })
+  })
+}
+
 export default {
   init,
   getConnection,
-  createTable
+  createTable,
+  runPromise,
+  getPromise
 }

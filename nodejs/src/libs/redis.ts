@@ -1,5 +1,7 @@
 import redis from 'redis'
 import config from 'config'
+import auth from './auth'
+import {promisify} from 'util'
 
 const configRedis: any = config.get('redis')
 const host = configRedis.get('host')
@@ -28,19 +30,20 @@ function remove(key: string) {
   }
 }
 
-function get(key: string) {
-  return redisClient.get(key, (err, value) => {
-    if (err) {
-      throw {
-        code: 500,
-        message: "Delete key failed"
-      }
-    }
-    return value
-  })
+async function get(key: string) {
+  const getAsync = promisify(redisClient.get).bind(redisClient);
+
+  return getAsync(key)
 }
+
+async function existsToken(token: string = '', secret: string) {
+  let key = auth.getTokenKey(token, secret)
+  return get(key)
+}
+
 export default {
   save,
   remove,
-  get
+  get,
+  existsToken
 }

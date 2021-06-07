@@ -19,28 +19,29 @@ const upload = multer({ storage: multer.memoryStorage() })
 
 router.post('/', verifyAuthRequired, upload.single('file'), async function (req, res, next) {
   try {
-      validateFormData(req)
-      let owner: string = req.body.owner
-      let metadata: string = req.body.metadata
-      let file = req.file
+    validateFormData(req)
+    let owner: string = req.body.owner
+    let metadata: string = req.body.metadata
+    let file = req.file
 
-      let localId = utils.createParcelId(owner, metadata, file.buffer)
-      let parcelId = `${storage.storage_id}${localId}`
+    let localId = utils.createParcelId(owner, metadata, file.buffer)
+    let parcelId = `${storage.storage_id}${localId}`
 
-      const existsMetadata = await s3Client.existsObject(minio.bucket_name, parcelId, true)
-      if(existsMetadata){
-          return res.json({"id": parcelId})
-      }
+    const existsMetadata = await s3Client.existsObject(minio.bucket_name, parcelId, true)
 
-      await s3Client.upload(parcelId, file.buffer, file.size, JSON.parse(metadata))
+    if(existsMetadata){
+        return res.json({"id": parcelId})
+    }
 
-      res.json({"id": parcelId})
+    await s3Client.upload(parcelId, file.buffer, file.size, JSON.parse(metadata))
+
+    res.json({"id": parcelId})
   } catch (error) {
-      utils.decorateErrorResponse(res, error).json({"error": error.message})
+    utils.decorateErrorResponse(res, error).json({"error": error.message})
   }
 })
 
-router.get('/:parcel_id([a-zA-Z0-9]+)', /*verifyAuthRequired, TODO */ async function (req, res, next) {
+router.get('/:parcel_id([a-zA-Z0-9]+)', verifyAuthRequired, async function (req, res, next) {
   const parcelId = req.params.parcel_id
   const key = req.query.key
 
@@ -61,9 +62,8 @@ router.get('/:parcel_id([a-zA-Z0-9]+)', /*verifyAuthRequired, TODO */ async func
   }
 })
 
-router.get('/download/:parcel_id([a-zA-Z0-9]+)', /*verifyAuthRequired, TODO */ async function (req: Request, res: Response, next: NextFunction) {
+router.get('/download/:parcel_id([a-zA-Z0-9]+)', verifyAuthRequired, async function (req: Request, res: Response, next: NextFunction) {
   const parcelId = req.params.parcel_id
-  req.user = "1E6C1528E4C04F5C879BE30F5A62121CE343308B"
 
   try {
       const metadata: any = await s3Client.getObjectMetadata(minio.bucket_name, parcelId)

@@ -10,7 +10,7 @@ import utils from "../libs/utils"
 const router = express.Router()
 const auth: any = config.get('auth')
 
-router.post('/', function (req, res, next) {
+router.post('/', async function (req, res, next) {
   let authJson: Auth = req.body
   try {
     jsonValidator.validateJsonSchema(authJson)
@@ -20,11 +20,11 @@ router.post('/', function (req, res, next) {
 
     const token = jwt.createToken(authJson, auth.secret, {algorithm: auth.algorithm})
 
-    redis.save(`${authJson.user}:${authJson.operation.name}:${authJson.operation.hash}`, token)
-
+    redis.save(`${authJson.user}:${authJson.operation.name}`, token)
     res.status(200).json({"token": token})
   } catch (error) {
-    utils.decorateErrorResponse(res, error).json({"error": error.message})
+    const errorMessage = utils.makeErrorMessage(error)
+    utils.decorateErrorResponse(res, error).json({"error": errorMessage})
   }
 })
 
