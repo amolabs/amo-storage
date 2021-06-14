@@ -34,7 +34,7 @@ router.post('/', verifyAuthRequired, upload.single('file'), async function (req,
     }
 
     await s3Client.upload(parcelId, file.buffer, file.size, JSON.parse(metadata))
-
+    console.log("# parcelId:", parcelId)
     res.json({"id": parcelId})
   } catch (error) {
     utils.decorateErrorResponse(res, error).json({"error": error.message})
@@ -69,9 +69,9 @@ router.get('/download/:parcel_id([a-zA-Z0-9]+)', verifyAuthRequired, async funct
       const metadata: any = await s3Client.getObjectMetadata(minio.bucket_name, parcelId)
 
       if (req.user != metadata.owner) {
-          let res: any = await rpc.usageQuery(parcelId, req.user)
+          let result: any = await rpc.usageQuery(parcelId, req.user)
 
-          if (res.data.result.response.code != 0) {
+          if (result.data.result.response.code != 0) {
               throw {
                   code: 403,
                   message: `No permission to download data parcel ${parcelId}`

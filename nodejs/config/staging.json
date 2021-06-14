@@ -1,6 +1,6 @@
 {
-  "ip": "192.168.101.169",
-  "port": 5001,
+  "ip": "192.168.101.59",
+  "port": 5000,
   "dotenv": {
     "win_path": "D:\\amo-storage\\config\\.env",
     "posix_path": "/amo-storage/config/.env"
