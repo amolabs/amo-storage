@@ -17,8 +17,8 @@ const dotenvPath = process.env.dotenv_path ?
     process.env.dotenv_path : (osType == 'Windows_NT' ? configDotenv.win_path : configDotenv.posix_path)
 const minio: any = config.get('minio')
 dotenv.config({path: dotenvPath})
-const accessKey: any = process.env.accessKey
-const secretKey: any = process.env.secretKey
+const accessKey: any = process.env.accessKey ? process.env.accessKey : minio.access_key
+const secretKey: any = process.env.secretKey ? process.env.secretKey : minio.secret_key
 // DB가 필요할 경우 사용
 // const dbConn = db.init()
 // db.createTable(dbConn)

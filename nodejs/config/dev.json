@@ -1,6 +1,6 @@
 {
   "ip": "127.0.0.1",
-  "port": 8080,
+  "port": 9090,
   "dotenv": {
     "win_path": "D:\\amo-storage\\config\\.env",
     "posix_path": "/amo-storage/config/.env"
@@ -17,7 +17,9 @@
     "end_point": "127.0.0.1",
     "port": 9000,
     "use_ssl": false,
-    "bucket_name": "amo"
+    "bucket_name": "amo",
+    "access_key": "minioadmin",
+    "secret_key": "minioadmin"
   },
   "amo_blockchain_node": {
     "host": "172.105.213.114",

@@ -6,6 +6,8 @@ import redis from "../libs/redis"
 const configAuth: any = config.get('auth')
 
 export async function  verifyAuthRequired(req: Request, res: Response, next: NextFunction) {
+  console.log("# token:", req.header('X-Auth-Token'))
+  console.log("# payload:", auth.getPayload(req.header('X-Auth-Token'), configAuth.secret))
   if (!req.query.key) {
     try {
       await _verifyAll(req)

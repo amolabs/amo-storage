@@ -27,7 +27,12 @@ async function createBucket(bucketName: string, region: string = 'Seoul') {
 async function upload(parcelId: string, buffer: Buffer, size: number, metadata: object) {
   await existsBucket(configMinio.bucket_name)
   await alreadyExistsObject(configMinio.bucket_name, parcelId)
-  return client.putObject(configMinio.bucket_name, parcelId, buffer, size, metadata)
+
+  if (size != 0) {
+    return client.putObject(configMinio.bucket_name, parcelId, buffer, size, metadata)
+  } else {
+    return client.putObject(configMinio.bucket_name, parcelId, buffer, metadata)
+  }
 }
 
 async function download(bucketName:string = configMinio.bucket_name, parcelId: string) {

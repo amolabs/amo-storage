@@ -28,12 +28,19 @@ function verifyPayload(token = '', secret: string) {
 }
 
 function verifySignature(msg: string = '', pubkeyHex = '', sigHex = '') {
-  const msgHash = createHash('sha256').update(msg).digest('hex');
-  const ecKey = new EC('p256').keyFromPublic(pubkeyHex, 'hex')
-  const sigBuf = Buffer.from(sigHex, 'hex')
-  const sig = { r: sigBuf.slice(0, 32), s: sigBuf.slice(32,64) }
+  try {
+    const msgHash = createHash('sha256').update(msg).digest('hex');
+    const ecKey = new EC('p256').keyFromPublic(pubkeyHex, 'hex')
+    const sigBuf = Buffer.from(sigHex, 'hex')
+    const sig = { r: sigBuf.slice(0, 32), s: sigBuf.slice(32,64) }
 
-  return ecKey.verify(msgHash, sig)
+    return ecKey.verify(msgHash, sig)
+  } catch (e){
+    console.log("# verifySignature: ", e)
+    throw e
+  }
+
+
 }
 
 
@@ -44,6 +51,7 @@ function getTokenKey(token: string = '', secret: string) {
 
 function getPayload(token = '', secret: string) {
   const payload: any = jwt.verify(token, secret)
+  // console.log("# payload: ", payload)
   if (!payload.user || !payload.operation)
     return null
 

@@ -19,12 +19,13 @@ const upload = multer({ storage: multer.memoryStorage() })
 
 router.post('/', verifyAuthRequired, upload.single('file'), async function (req, res, next) {
   try {
-    validateFormData(req)
+    // validateFormData(req)
     let owner: string = req.body.owner
     let metadata: string = req.body.metadata
-    let file = req.file
-
-    let localId = utils.createParcelId(owner, metadata, file.buffer)
+    let file1 = req.file
+    const file = req.file ? req.file.buffer : req.body.file
+    const size = req.file ? req.file.size : 0
+    let localId = utils.createParcelId(owner, metadata, file)
     let parcelId = `${storage.storage_id}${localId}`
 
     const existsMetadata = await s3Client.existsObject(minio.bucket_name, parcelId, true)
@@ -33,10 +34,11 @@ router.post('/', verifyAuthRequired, upload.single('file'), async function (req,
         return res.json({"id": parcelId})
     }
 
-    await s3Client.upload(parcelId, file.buffer, file.size, JSON.parse(metadata))
+    await s3Client.upload(parcelId, file, size, JSON.parse(metadata))
     console.log("# parcelId:", parcelId)
     res.json({"id": parcelId})
   } catch (error) {
+    console.log("#upload error", error)
     utils.decorateErrorResponse(res, error).json({"error": error.message})
   }
 })
