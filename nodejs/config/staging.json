@@ -1,0 +1,32 @@
+{
+  "ip": "192.168.101.59",
+  "port": 5000,
+  "dotenv": {
+    "win_path": "D:\\amo-storage\\config\\.env",
+    "posix_path": "/amo-storage/config/.env"
+  },
+  "auth": {
+    "issuer": "amo-storage",
+    "algorithm": "HS256",
+    "secret": "amoamoautocryptoamoamo"
+  },
+  "storage": {
+    "storage_id": "00000001"
+  },
+  "minio": {
+    "end_point": "192.168.101.64",
+    "port": 9000,
+    "use_ssl": false,
+    "access_key": "DPDLQHRLQHSTMXHFLWL",
+    "secret_key": "qhdksdlchlrhdlqslek./20",
+    "bucket_name": "amo"
+  },
+  "amo_blockchain_node": {
+    "host": "172.105.213.114",
+    "port": 26657
+  },
+  "redis": {
+    "host": "127.0.0.1",
+    "port": 6378
+  }
+}
