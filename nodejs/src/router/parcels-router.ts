@@ -22,7 +22,7 @@ router.post('/', verifyAuthRequired, upload.single('file'), async function (req,
     // validateFormData(req)
     let owner: string = req.body.owner
     let metadata: string = req.body.metadata
-    let file1 = req.file
+    // let file = req.file
     const file = req.file ? req.file.buffer : req.body.file
     const size = req.file ? req.file.size : 0
     let localId = utils.createParcelId(owner, metadata, file)
