@@ -19,7 +19,7 @@ const upload = multer({ storage: multer.memoryStorage() })
 
 router.post('/', verifyAuthRequired, upload.single('file'), async function (req, res, next) {
   try {
-    // validateFormData(req)
+    validateFormData(req)
     let owner: string = req.body.owner
     let metadata: string = req.body.metadata
     // let file = req.file
@@ -66,7 +66,7 @@ router.get('/:parcel_id([a-zA-Z0-9]+)', verifyAuthRequired, async function (req,
 
 router.get('/download/:parcel_id([a-zA-Z0-9]+)', verifyAuthRequired, async function (req: Request, res: Response, next: NextFunction) {
   const parcelId = req.params.parcel_id
-
+  console.log("# download")
   try {
       const metadata: any = await s3Client.getObjectMetadata(minio.bucket_name, parcelId)
 

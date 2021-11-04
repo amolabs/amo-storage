@@ -56,7 +56,7 @@ async function streamToString(stream: Stream) {
 		stream.on('error', error => reject(error));
 		stream.on('end', () => {
 			console.log("# finish")
-			resolve(Buffer.concat(chunks).toString('hex'))
+			resolve(Buffer.concat(chunks).toString('utf8'))
 		})
 	})
 }

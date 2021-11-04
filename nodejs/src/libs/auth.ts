@@ -33,7 +33,6 @@ function verifySignature(msg: string = '', pubkeyHex = '', sigHex = '') {
     const ecKey = new EC('p256').keyFromPublic(pubkeyHex, 'hex')
     const sigBuf = Buffer.from(sigHex, 'hex')
     const sig = { r: sigBuf.slice(0, 32), s: sigBuf.slice(32,64) }
-
     return ecKey.verify(msgHash, sig)
   } catch (e){
     console.log("# verifySignature: ", e)

@@ -3,7 +3,7 @@ import {Request} from "express"
 export function validateFormData(req: Request) {
   let owner = req.body.owner
   let metadata = req.body.metadata
-  let file = req.file
+  let file = req.file ? req.file.buffer : req.body.file
 
   if (!owner) {
     throw {
