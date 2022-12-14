@@ -75,7 +75,7 @@
     "cross-env": "^7.0.3",
     "dotenv": "^9.0.0",
     "elliptic": "^6.5.4",
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "jsonwebtoken": "^8.5.1",
     "minio": "^7.0.18",
     "morgan": "^1.10.0",
